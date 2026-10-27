@@ -84,13 +84,14 @@ h1, h2, h3 { text-wrap: balance; }
   padding-block: 72px 120px;
 }
 .heros .cadre > * { min-width: 0; }
+.heros .texte { container-type: inline-size; }
 .surtitre {
   font: 13px/1 var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--moutarde);
   display: inline-flex; align-items: center; gap: 10px;
 }
 .surtitre::before { content: ""; width: 28px; height: 2px; background: var(--moutarde); }
 .marque {
-  font: 400 clamp(46px, 8.4vw, 104px)/.92 var(--f-display);
+  font: 400 min(11.5cqi, 104px)/.92 var(--f-display);
   letter-spacing: -.02em; margin: 18px 0 10px; text-transform: uppercase;
   color: var(--creme);
   text-shadow: 0 0 18px color-mix(in srgb, var(--neon) 55%, transparent), 4px 4px 0 var(--brun);
@@ -222,7 +223,7 @@ footer .cadre {
 
 <header class="heros gouttiere">
   <div class="cadre">
-    <div>
+    <div class="texte">
       <span class="surtitre">Home computer studio · France</span>
       <h1 class="marque">Vendetta<span class="chiffre">84</span></h1>
       <p class="devise">Home computers from the France <em>that never was.</em></p>
