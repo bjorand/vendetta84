@@ -486,7 +486,7 @@ A&gt;git clone https://github.com/rxi/json.lua &amp;
           <ul>
             <li><strong>The shell</strong>: a text screen of cells, font, 16 colors and cursor. A typed character costs a few bytes on the link.</li>
             <li><strong>The desktop</strong>: the background, each window, the taskbar and the open menu are 4-bit planes in the Pico's RAM. Moving or raising a window only changes positions; only rows whose contents changed travel.</li>
-            <li><strong>The isometric world</strong> of <code>realm</code>: the sprites and the map go once, then only the camera and the people; the Pico draws what changed.</li>
+            <li><strong>The isometric world</strong> of the <code>iso</code> library (see <code>realm</code>): the sprites and the map go once, then only the camera and the people; the Pico draws what changed.</li>
             <li><strong>The mouse pointer and the scanlines</strong>, in every mode.</li>
           </ul>
           <p>The rest (paint, screen savers, a desktop too full for the Pico's RAM) still goes as strips of 16 lines into a 640×480 framebuffer in 256 colors (RGB332). The text screen, the desktop and the world show the exact colors. Text modes are 80×30 or 106×40 (<code>mode 106|80</code>).</p>
@@ -687,7 +687,7 @@ end</pre>
             <tr><th>Module</th><th>Functions</th></tr>
             <tr><td>global</td><td><code>print(...)</code>, <code>write(...)</code>, <code>require "mod"</code> (loads <code>mod.lua</code>), the <code>arg</code> table (<code>arg[0]</code> is the script)</td></tr>
             <tr><td><code>term</code></td><td><code>cls()</code>, <code>put(x, y, text [, attr])</code>, <code>cell(x, y, ch [, attr])</code>, <code>char(x, y)</code>, <code>fill(y [, ch, attr])</code>, <code>cursor([x, y])</code>, <code>showcursor(b)</code>, <code>attr([a])</code>, <code>cols()</code>, <code>rows()</code></td></tr>
-            <tr><td><code>key</code></td><td><code>poll()</code> (event or <code>nil</code>), <code>wait()</code>. Events: <code>{type="char", ch="é"}</code>, <code>{type="key", key="up", ctrl, shift, alt}</code>, <code>{type="mouse", button, down}</code>, <code>{type="wheel", n}</code></td></tr>
+            <tr><td><code>key</code></td><td><code>poll()</code> (event or <code>nil</code>), <code>wait()</code>, <code>held(name)</code>: whether a key is down now, for games. Events: <code>{type="char", ch="é"}</code>, <code>{type="key", key="up", ctrl, shift, alt}</code>, <code>{type="mouse", button, down}</code>, <code>{type="wheel", n}</code></td></tr>
             <tr><td><code>mouse</code></td><td><code>pos()</code> → x, y in pixels; <code>down([button])</code>; <code>show(b)</code></td></tr>
             <tr><td><code>sound</code></td><td><code>tone(hz [, ms])</code>, <code>play(rtttl)</code>, <code>stop()</code>, <code>busy()</code>, <code>tune(name)</code></td></tr>
             <tr><td><code>fs</code></td><td><code>read</code>, <code>write</code>, <code>append</code>, <code>exists</code>, <code>remove</code>, <code>size</code>, <code>list</code>, <code>rename</code>, <code>info()</code>; directories: <code>mkdir</code>, <code>rmdir</code>, <code>isdir</code>, <code>dir([d])</code>, <code>rmtree</code>, <code>cwd()</code>; <code>open(f [, mode])</code> → <code>read(n|"a")</code>, <code>write(s)</code>, <code>seek([pos])</code>, <code>size()</code>, <code>close()</code></td></tr>
@@ -696,6 +696,7 @@ end</pre>
             <tr><td><code>os</code></td><td><code>getpid()</code>, <code>getenv(name)</code>, <code>setenv(name, value)</code>, <code>environ()</code>, <code>exit([code])</code>, <code>spawn(command line)</code> → pid, <code>wait([pid])</code> → pid, exit code, <code>kill(pid [, signal])</code></td></tr>
             <tr><td><code>sys</code></td><td><code>millis()</code>, <code>sleep(ms)</code>, <code>yield()</code>, <code>random([n])</code>, <code>mem()</code>, <code>time()</code>, <code>epoch()</code>, <code>clipboard()</code>, <code>setclipboard(text)</code></td></tr>
             <tr><td><code>store</code></td><td><code>get(key [, default])</code>, <code>set(key, value)</code>: numbers or strings kept in NVS, keys of 15 characters at most</td></tr>
+            <tr><td><code>iso</code></td><td>Isometric world drawn by the video card: <code>open()</code>, <code>close()</code>, <code>load(art)</code> (colors and sprites), <code>color(i, rgb)</code>, <code>map(w, h, tiles)</code>, <code>tile(x, y, ground, object)</code>, <code>frame{x, y, status, people}</code>. Only the camera and the people travel each frame; the Pico draws what changed. <code>pkg install realm</code> for an example.</td></tr>
             <tr><td><code>zlib</code> <code>sha1</code> <code>gitc</code></td><td>Building blocks of the Git client (details in <code>firmware/src/lua/libgit.h</code>)</td></tr>
           </table></div>
           <p>A Lua program is a good pipeline citizen:</p>
