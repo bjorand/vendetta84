@@ -737,8 +737,10 @@ pkg info &lt;name&gt;       <span class="c">details of a package</span>
 pkg install &lt;name&gt;    <span class="c">install, with its dependencies</span>
 pkg upgrade [name]    <span class="c">upgrade (everything by default)</span>
 pkg remove [-f] &lt;name&gt; <span class="c">uninstall</span>
-pkg url [address]     <span class="c">change registry (fork, test server)</span></pre>
-          <p>A package lands in <code>A:\pkg\&lt;name&gt;\</code>, each file checked against its SHA-1 sum. Its commands run at the prompt like other programs, <code>require "name.module"</code> finds its modules, and its <code>-- @app</code> files appear on the desktop. To publish one, see the registry's <code>CONTRIBUTING.md</code>.</p>
+pkg source            <span class="c">registries in use</span>
+pkg source add &lt;name&gt; &lt;url&gt;   <span class="c">add a registry</span>
+pkg url [address]     <span class="c">change the main registry</span></pre>
+          <p>A package lands in <code>A:\pkg\&lt;name&gt;\</code>, each file checked against its SHA-1 sum. Its commands run at the prompt like other programs, <code>require "name.module"</code> finds its modules, and its <code>-- @app</code> files appear on the desktop. To publish one, see the registry's <code>CONTRIBUTING.md</code>. A project can also publish its own registry, added with <code>pkg source add</code>.</p>
         </article>
 
         <!-- WIN -->
