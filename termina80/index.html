@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TERMINA 80 — the microcomputer</title>
+<meta name="description" content="TERMINA 80 by Vendetta 84, a retro phosphor microcomputer on an ESP32: a Unix-style shell with pipes, jobs and scripts, Lua, Git, PICO-8 carts, a web browser, a graphical desktop and an HDMI video card. Overview and user manual.">
+<meta name="theme-color" content="#050706">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050706;
+  --bg-2: #0b0f0d;
+  --card: #0e1311;
+  --line: rgba(220, 255, 235, .09);
+  --line-2: rgba(220, 255, 235, .16);
+  --text: #eef2ef;
+  --body: #b9c2bd;
+  --muted: #8b958f;
+  --phos: #62ffa6;
+  --phos-dim: rgba(98, 255, 166, .14);
+  --amber: #ffb84d;
+  --paper: #f7f7f2;
+  --ink: #111312;
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+  --display: "Inter Tight", "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.55 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+code, pre, kbd { font-family: var(--mono); }
+:not(pre) > code { font-size: .86em; color: var(--phos); }
+kbd {
+  font-size: .78em; padding: 2px 7px; border-radius: 6px; color: var(--text);
+  border: 1px solid var(--line-2); border-bottom-width: 2px; background: var(--card);
+}
+::selection { background: var(--phos); color: var(--bg); }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.eyebrow {
+  font: 500 12px/1.4 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--phos);
+}
+.eyebrow::before { content: "▍"; margin-right: 8px; animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ===== nav ===== */
+nav {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(5, 7, 6, .72); backdrop-filter: saturate(160%) blur(18px); -webkit-backdrop-filter: saturate(160%) blur(18px);
+  border-bottom: 1px solid var(--line);
+}
+nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 52px; }
+nav .brand { font: 600 15px/1 var(--display); letter-spacing: .14em; text-decoration: none; }
+nav .brand span { color: var(--phos); }
+nav ul { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
+nav ul a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .2s; }
+nav ul a:hover { color: var(--text); }
+
+/* ===== hero ===== */
+.hero { position: relative; padding: 112px 0 0; text-align: center; overflow: hidden; }
+.hero::before { /* phosphor glow */
+  content: ""; position: absolute; left: 50%; top: 380px; width: 1100px; height: 700px; transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(98,255,166,.16), transparent); pointer-events: none;
+}
+.hero::after { /* receding grid */
+  content: ""; position: absolute; left: -50%; right: -50%; bottom: 0; height: 340px; pointer-events: none;
+  background:
+    linear-gradient(var(--bg), transparent 40%),
+    repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(0deg, var(--line) 0 1px, transparent 1px 40px);
+  transform: perspective(500px) rotateX(62deg); transform-origin: bottom;
+  mask-image: linear-gradient(transparent, #000 60%);
+  -webkit-mask-image: linear-gradient(transparent, #000 60%);
+}
+.hero h1 {
+  font: 700 clamp(64px, 12vw, 148px)/.92 var(--display); letter-spacing: -.045em; margin: 22px 0 18px;
+  background: linear-gradient(180deg, #fff 30%, #9aa59f); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero .tagline { font: 500 clamp(22px, 3vw, 32px)/1.2 var(--display); letter-spacing: -.02em; margin: 0; }
+.hero .tagline em { font-style: normal; color: var(--muted); }
+.hero .lede { max-width: 36em; margin: 18px auto 0; color: var(--muted); }
+.actions { display: flex; gap: 28px; justify-content: center; align-items: center; margin-top: 32px; flex-wrap: wrap; }
+.btn {
+  font: 500 15px/1 var(--sans); text-decoration: none; padding: 13px 24px; border-radius: 999px;
+  background: var(--text); color: var(--bg); transition: background .2s;
+}
+.btn:hover { background: var(--phos); }
+.more { font-size: 15px; color: var(--phos); text-decoration: none; }
+.more:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+.crt {
+  position: relative; z-index: 2; width: min(760px, 100%); margin: 72px auto 0;
+  padding: 18px; border-radius: 34px 34px 0 0;
+  background: linear-gradient(180deg, #1a1f1c, #0c0f0d);
+  border: 1px solid var(--line-2); border-bottom: 0;
+  box-shadow: 0 -1px 0 rgba(255,255,255,.06) inset, 0 40px 120px rgba(98,255,166,.10);
+}
+.crt .screen {
+  position: relative; aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, #0c1a12, #030604 80%);
+  font: 400 clamp(11px, 1.9vw, 16px)/1.5 var(--mono); color: var(--phos); text-align: left;
+  text-shadow: 0 0 8px rgba(98,255,166,.55);
+  padding: 24px 28px; white-space: pre;
+}
+.crt .screen::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(transparent 0 2px, rgba(0,0,0,.35) 2px 3px);
+  box-shadow: inset 0 0 80px rgba(0,0,0,.8);
+}
+.crt .dim { color: #3f8f63; text-shadow: none; }
+.crt .amb { color: var(--amber); text-shadow: 0 0 8px rgba(255,184,77,.5); }
+.cursor { display: inline-block; width: .6em; background: var(--phos); animation: blink 1.1s steps(1) infinite; }
+
+/* ===== stats ===== */
+.stats { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-2); position: relative; z-index: 3; }
+.stats .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
+.stat { padding: 40px 24px; border-left: 1px solid var(--line); }
+.stat:first-child { border-left: 0; padding-left: 0; }
+.stat b { display: block; font: 600 clamp(30px, 4vw, 44px)/1 var(--display); letter-spacing: -.03em; }
+.stat b small { font-size: .45em; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
+.stat span { display: block; margin-top: 10px; font: 400 12px/1.5 var(--mono); color: var(--muted); }
+
+/* ===== sections ===== */
+section { padding: 140px 0; }
+section + section { border-top: 1px solid var(--line); }
+.head { max-width: 760px; margin-bottom: 64px; }
+.head h2 { font: 600 clamp(40px, 6vw, 64px)/1.02 var(--display); letter-spacing: -.035em; margin: 16px 0 18px; }
+.head h2 em { font-style: normal; color: var(--muted); }
+.head p { color: var(--muted); font-size: 19px; margin: 0; }
+
+/* bento */
+.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
+.cell {
+  grid-column: span 2; position: relative; overflow: hidden;
+  background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 32px;
+  transition: border-color .3s;
+}
+.cell:hover { border-color: rgba(98,255,166,.35); }
+.cell.wide { grid-column: span 4; }
+.cell.half { grid-column: span 3; }
+.cell .tag { font: 500 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.cell h3 { font: 600 26px/1.15 var(--display); letter-spacing: -.02em; margin: 14px 0 10px; }
+.cell p { margin: 0; color: var(--muted); font-size: 15.5px; }
+.cell pre {
+  margin: 24px 0 0; padding: 18px 20px; border-radius: 14px; background: #040605; border: 1px solid var(--line);
+  font-size: 13px; line-height: 1.6; color: var(--phos); overflow-x: auto;
+}
+.cell .big {
+  font: 600 76px/1 var(--display); letter-spacing: -.05em; margin-top: 26px;
+  background: linear-gradient(90deg, var(--phos), #b6ffd6); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.cell .big.amber { background: linear-gradient(90deg, var(--amber), #ffe1ad); -webkit-background-clip: text; background-clip: text; }
+.cell.glow::before {
+  content: ""; position: absolute; right: -120px; bottom: -160px; width: 360px; height: 360px; border-radius: 50%;
+  background: radial-gradient(closest-side, var(--phos-dim), transparent); pointer-events: none;
+}
+.swatches { display: flex; gap: 10px; margin-top: 24px; }
+.swatches i {
+  flex: 1; height: 54px; border-radius: 12px; border: 1px solid var(--line);
+  display: grid; place-items: center; font: 500 13px/1 var(--mono); font-style: normal;
+}
+
+/* tech specs */
+.specs { display: grid; grid-template-columns: 220px minmax(0, 1fr); border-top: 1px solid var(--line-2); }
+.specs dt, .specs dd { margin: 0; padding: 22px 0; border-bottom: 1px solid var(--line); }
+.specs dt { font: 600 17px/1.4 var(--display); }
+.specs dd { color: var(--body); }
+.specs dd b { color: var(--text); font-weight: 600; }
+.flow {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; font: 400 13px/1 var(--mono); color: var(--muted);
+}
+.flow + .flow { margin-top: 12px; }
+.flow span { padding: 9px 14px; border: 1px solid var(--line-2); border-radius: 999px; color: var(--text); }
+.flow span.on { border-color: rgba(98,255,166,.5); color: var(--phos); }
+
+/* the case: light, like a product shot */
+.case { background: var(--paper); color: var(--ink); }
+.case .eyebrow { color: #0a7a43; }
+.case .head p, .case .head h2 em { color: #6b716d; }
+.case .shot { margin: 0 auto; width: 100%; max-width: 900px; }
+.case .row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 48px; }
+.case .row figure { margin: 0; background: #fff; border-radius: 22px; overflow: hidden; border: 1px solid #e6e6df; }
+.case figcaption { padding: 14px 18px; font: 500 12px/1.4 var(--mono); color: #6b716d; border-top: 1px solid #ecece6; }
+.case .note { text-align: center; margin: 48px auto 0; color: #6b716d; max-width: 40em; }
+.case code { color: #0a7a43; }
+
+/* ===== manual ===== */
+.docs { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 64px; }
+.toc { position: sticky; top: 84px; align-self: start; font-size: 14px; }
+.toc p { font: 500 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+.toc a { display: block; padding: 6px 0 6px 14px; border-left: 1px solid var(--line); color: var(--muted); text-decoration: none; transition: color .2s; }
+.toc a:hover { color: var(--text); }
+.toc a.active { color: var(--phos); border-left-color: var(--phos); }
+
+.chapter { padding-bottom: 72px; margin-bottom: 72px; border-bottom: 1px solid var(--line); scroll-margin-top: 84px; }
+.chapter:last-child { border-bottom: 0; margin-bottom: 0; }
+.chapter h3 { font: 600 34px/1.1 var(--display); letter-spacing: -.025em; margin: 0 0 18px; }
+.chapter h4 { font: 600 20px/1.2 var(--display); letter-spacing: -.01em; margin: 40px 0 12px; }
+.chapter p, .chapter li { color: var(--body); max-width: 42em; }
+.chapter strong { color: var(--text); font-weight: 600; }
+.chapter a { color: var(--phos); text-underline-offset: 3px; }
+.chapter ul { padding-left: 1.1em; }
+.chapter li { margin: 6px 0; }
+.chapter li::marker { color: var(--phos); }
+.chapter pre {
+  background: #040605; border: 1px solid var(--line); border-radius: 16px; padding: 20px 24px; overflow-x: auto;
+  font-size: 13.5px; line-height: 1.65; color: var(--phos); margin: 24px 0;
+}
+.chapter pre .c { color: var(--muted); }
+.chapter pre.amber { color: var(--amber); }
+.table-wrap { overflow-x: auto; margin: 24px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th { text-align: left; font: 500 11px/1.3 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 0 16px 14px 0; border-bottom: 1px solid var(--line-2); }
+td { padding: 14px 16px 14px 0; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--body); }
+td:first-child { min-width: 9em; }
+td code { white-space: normal; }
+.callout {
+  border: 1px solid var(--line); border-left: 2px solid var(--amber); border-radius: 0 14px 14px 0;
+  padding: 16px 20px; margin: 24px 0; color: var(--body); font-size: 15.5px; background: rgba(255,184,77,.04); max-width: 46em;
+}
+.callout.info { border-left-color: var(--phos); background: rgba(98,255,166,.04); }
+
+footer { border-top: 1px solid var(--line); padding: 48px 0 64px; color: var(--muted); font-size: 13px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+footer b { color: var(--text); font: 600 13px/1 var(--display); letter-spacing: .14em; }
+footer b span { color: var(--phos); }
+
+@media (max-width: 860px) {
+  nav ul { display: none; }
+  .hero { padding-top: 72px; }
+  .crt { padding: 10px; border-radius: 22px 22px 0 0; margin-top: 48px; }
+  .crt .screen { padding: 14px 16px; border-radius: 12px; }
+  .stats .wrap { grid-template-columns: 1fr 1fr; }
+  .stat { padding: 28px 16px; }
+  .stat:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+  section { padding: 96px 0; }
+  .bento { grid-template-columns: minmax(0, 1fr); }
+  .cell, .cell.wide, .cell.half { grid-column: auto; padding: 26px; }
+  .specs { grid-template-columns: minmax(0, 1fr); }
+  .specs dt { padding-bottom: 4px; border-bottom: 0; }
+  .specs dd { padding-top: 0; }
+  .case .row { grid-template-columns: minmax(0, 1fr); }
+  .docs { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .toc { position: static; columns: 2; }
+  .toc p { column-span: all; }
+}
+@media (prefers-reduced-motion: reduce) { .eyebrow::before, .cursor { animation: none; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#">TERMINA <span>80</span></a>
+    <ul>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#specs">Tech specs</a></li>
+      <li><a href="#case">Design</a></li>
+      <li><a href="#manual">Manual</a></li>
+      <li><a href="../">Vendetta 84</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow"><a href="../" style="text-decoration:none">Vendetta 84</a> · Personal microcomputer</div>
+    <h1>TERMINA 80</h1>
+    <p class="tagline">A 1984 computer. <em>Built in 2026.</em></p>
+    <p class="lede">A phosphor terminal on an ESP32-S3, with real processes, a scripting shell, Lua, Git, PICO-8 carts and a windowed desktop. Your PC's keyboard and mouse reach it over Wi-Fi, and a Pico 2W drives any HDMI screen.</p>
+    <div class="actions">
+      <a class="btn" href="#manual">Read the manual</a>
+      <a class="more" href="#features">Explore the features ›</a>
+    </div>
+    <div class="crt" aria-label="A TERMINA shell session">
+      <div class="screen"><span class="dim">TERMINA DOS 1.0 · 8192 KB PSRAM · termina.local</span>
+
+A&gt;ls | grep lua
+hello.lua
+snake.lua
+A&gt;count.sh readme.txt notes.txt
+readme.txt: 4
+notes.txt: 12
+<span class="amb">total: 16</span>
+A&gt;git pull &gt; pull.log 2&gt;&amp;1 &amp;
+[1] 7
+A&gt;<span class="cursor">&nbsp;</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="wrap">
+    <div class="stat"><b>240<small>MHz</small></b><span>ESP32-S3 · dual core · 8 MB PSRAM</span></div>
+    <div class="stat"><b>80×26</b><span>Text on a 3.5" 480×320 panel</span></div>
+    <div class="stat"><b>640×480</b><span>HDMI at 60 Hz via a Pico 2W</span></div>
+    <div class="stat"><b>11.9<small>MB</small></b><span>A: drive on LittleFS</span></div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Features</div>
+      <h2>Small machine. <em>Serious system.</em></h2>
+      <p>Everything a home computer had, and a few things it never dared to. From the <code>A&gt;</code> prompt all the way to the windowed desktop.</p>
+    </div>
+    <div class="bento">
+      <div class="cell wide glow">
+        <div class="tag">Shell</div>
+        <h3>Real processes, pipes and jobs.</h3>
+        <p>Every command runs in its own process. Pipe them, redirect them, send them to the background, stop them with <kbd>Ctrl</kbd>+<kbd>Z</kbd>. History, Tab completion, quoting and <code>$VARIABLES</code> included.</p>
+<pre>A&gt;cat log.txt | grep -i error | wc -l
+3
+A&gt;git clone https://github.com/rxi/json.lua &amp;
+[1] 5</pre>
+      </div>
+      <div class="cell">
+        <div class="tag">Processes</div>
+        <h3>Up to twelve at once.</h3>
+        <p>Signals, environment, <code>ps</code>, <code>kill</code>, <code>fg</code>, <code>bg</code>.</p>
+        <div class="big">12</div>
+      </div>
+      <div class="cell">
+        <div class="tag">Scripting</div>
+        <h3>Shell scripts.</h3>
+        <p><code>if</code>, <code>for</code>, <code>while</code>, <code>case</code>, functions, <code>$(...)</code> and <code>$((...))</code>. A <code>name.sh</code> file runs as the command <code>name</code>.</p>
+      </div>
+      <div class="cell">
+        <div class="tag">Lua 5.4</div>
+        <h3>Write it on the machine.</h3>
+        <p><code>edit game.lua</code>, then type <code>game</code>. Screen, keyboard, mouse, sound, files, network, pipes and processes.</p>
+      </div>
+      <div class="cell">
+        <div class="tag">Git</div>
+        <h3>A real Git client.</h3>
+        <p>Clone, commit, push and pull over smart HTTPS to GitHub, GitLab or Gitea. Your PC's git reads the result.</p>
+      </div>
+      <div class="cell half">
+        <div class="tag">PICO-8</div>
+        <h3>Play the carts.</h3>
+        <p>An independent player for <code>.p8</code> and <code>.p8.png</code> cartridges: code, sprites, maps, saves and buzzer music, at 30 or 60 frames per second.</p>
+        <div class="big amber">128²</div>
+      </div>
+      <div class="cell half glow">
+        <div class="tag">Video</div>
+        <h3>An HDMI video card.</h3>
+        <p>A Raspberry Pi Pico 2W composes text, windows and the mouse pointer line by line, like the picture chip of an 80s console.</p>
+        <div class="big">60 Hz</div>
+      </div>
+      <div class="cell">
+        <div class="tag">Desktop</div>
+        <h3>TERMINA WIN.</h3>
+        <p>A 3.1-style desktop with windows, taskbar, Start menu and Lua applications multitasking together. Jobs keep running behind it.</p>
+      </div>
+      <div class="cell">
+        <div class="tag">Packages</div>
+        <h3><code>pkg install</code>.</h3>
+        <p>Community Lua programs, modules and desktop apps, with their dependencies and SHA-1 checks.</p>
+      </div>
+      <div class="cell">
+        <div class="tag">Online</div>
+        <h3>Out on the network.</h3>
+        <p>A text-mode web browser with DuckDuckGo search, an ANSI <code>telnet</code>, and <code>share on</code> to drop files on <code>A:</code> from any browser.</p>
+      </div>
+      <div class="cell">
+        <div class="tag">Editor</div>
+        <h3>Full-screen <code>edit</code>.</h3>
+        <p>Selection, search and replace, undo, a clipboard shared with the prompt and the desktop, and syntax highlighting for Lua and shell scripts.</p>
+      </div>
+      <div class="cell">
+        <div class="tag">Play</div>
+        <h3>Games and art.</h3>
+        <p>A snake game, a mouse drawing program, RTTTL melodies on a passive buzzer.</p>
+      </div>
+      <div class="cell">
+        <div class="tag">Phosphors</div>
+        <h3>Pick your glow.</h3>
+        <p>With scanlines if you like.</p>
+        <div class="swatches">
+          <i style="background:#07140b;color:#49ff7a">G</i>
+          <i style="background:#140c03;color:#ffb02e">A</i>
+          <i style="background:#0c0e12;color:#e9f1ff">W</i>
+          <i style="background:#0000aa;color:#55ffff">CGA</i>
+        </div>
+      </div>
+      <div class="cell half">
+        <div class="tag">Emulator</div>
+        <h3>No board? No problem.</h3>
+        <p><code>termina-emu</code> runs the real, unmodified firmware on your PC, with screen, keyboard, mouse and sound.</p>
+      </div>
+      <div class="cell half">
+        <div class="tag">Input</div>
+        <h3>Your keyboard, over the air.</h3>
+        <p>AZERTY accents are translated on the PC side. A click captures the mouse, <kbd>F12</kbd> releases it. A USB mouse can also plug straight into the board.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="specs">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Tech specs</div>
+      <h2>One small board. <em>No keyboard.</em></h2>
+      <p>Your PC acts as the input device, over Wi-Fi.</p>
+    </div>
+    <dl class="specs">
+      <dt>Processor</dt><dd><b>ESP32-S3</b> at 240 MHz, dual core, on an ESP32-S3-DevKitC-1 N16R8: 16 MB flash, 8 MB PSRAM.</dd>
+      <dt>Display</dt><dd><b>3.5" 480×320</b> KMRTM35018-SPI panel with an ILI9488 controller. 80×26 text with the 6×8 font, or 60×20 with the 8×16 VGA font.</dd>
+      <dt>HDMI</dt><dd><b>640×480 at 60 Hz</b> DVI from a Raspberry Pi Pico 2W video card. 80×30 or 106×40 text.</dd>
+      <dt>Storage</dt><dd><b>11.9 MB</b> <code>A:</code> drive on LittleFS.</dd>
+      <dt>Software</dt><dd><b>Lua 5.4</b> with 32-bit numbers, 1 MB per program. Up to <b>12 processes</b> with pipes, signals and job control.</dd>
+      <dt>Sound</dt><dd>Passive buzzer, RTTTL melodies. Disk and network LEDs.</dd>
+      <dt>Input</dt><dd>Keyboard and mouse from the PC over <b>TCP 2323</b>, 8-byte frames, mDNS discovery <code>_termina._tcp</code>. Optional USB boot-protocol mouse.</dd>
+      <dt>Connections</dt><dd>
+        <div class="flow"><span>PC · termina-input</span>→ Wi-Fi · TCP 2323 →<span class="on">ESP32</span>→ SPI →<span>ILI9488 480×320</span></div>
+        <div class="flow"><span class="on">ESP32</span>→ SPI 20 MHz →<span>Pico 2W · scene</span>→ HSTX · DVI →<span>HDMI 640×480</span></div>
+      </dd>
+    </dl>
+  </div>
+</section>
+
+<section class="case" id="case">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Design</div>
+      <h2>Period beige. <em>Printed at home.</em></h2>
+      <p>An OpenSCAD case with its stand. The disk and network LEDs sit on the floppy drive chin, a grille lets the buzzer sing, and the board rides on a tray with its USB ports through the right wall.</p>
+    </div>
+    <img class="shot" src="img/preview.png" alt="3D render of the TERMINA 80 case from the front, beige on a brown stand, with the LEDs and buzzer grille on the chin">
+    <div class="row">
+      <figure><img src="img/preview_side.png" alt="The case from the side, with the board's USB ports in the right wall"><figcaption>Side · USB through the right wall</figcaption></figure>
+      <figure><img src="img/preview_back.png" alt="The case from the back, with the engraved label"><figcaption>Back · engraved label</figcaption></figure>
+      <figure><img src="img/preview_tray.png" alt="The electronics tray that holds the DevKitC-1"><figcaption>Tray · ESP32-S3 DevKitC-1</figcaption></figure>
+    </div>
+    <p class="note">The sources are in <code>case/</code>: <code>termina_case.scad</code> for OpenSCAD, plus STL files for the body, the back, the stand, the clamp and the board tray.</p>
+  </div>
+</section>
+
+<section id="manual">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">User manual</div>
+      <h2>From soldering iron <em>to git push.</em></h2>
+      <p>Everything you need to know to build, flash and use the machine.</p>
+    </div>
+    <div class="docs">
+      <aside class="toc">
+        <p>Contents</p>
+        <a href="#wiring">Wiring</a>
+        <a href="#hdmi">HDMI video card</a>
+        <a href="#firmware">Firmware</a>
+        <a href="#keyboard">Keyboard and mouse</a>
+        <a href="#share">Sharing files</a>
+        <a href="#emulator">Emulator</a>
+        <a href="#commands">Commands</a>
+        <a href="#shell">Processes and jobs</a>
+        <a href="#scripts">Shell scripts</a>
+        <a href="#lua">Programming in Lua</a>
+        <a href="#pico8">PICO-8 carts</a>
+        <a href="#git">Git</a>
+        <a href="#pkg">Packages</a>
+        <a href="#win">TERMINA WIN</a>
+        <a href="#code">Code layout</a>
+      </aside>
+      <div class="content">
+
+        <!-- Wiring -->
+        <article class="chapter" id="wiring">
+          <h3>Wiring</h3>
+          <div class="table-wrap"><table>
+            <tr><th>Display pin</th><th>ESP32-S3-DevKitC-1</th></tr>
+            <tr><td>VCC</td><td>3V3 (on the 5V pin of the DevKitC-1 the panel stays black, only the backlight lights)</td></tr>
+            <tr><td>GND</td><td>GND</td></tr>
+            <tr><td>CS</td><td>IO10</td></tr>
+            <tr><td>RESET</td><td>IO14</td></tr>
+            <tr><td>DC/RS</td><td>IO9</td></tr>
+            <tr><td>SDI (MOSI)</td><td>IO11</td></tr>
+            <tr><td>SCK</td><td>IO12</td></tr>
+            <tr><td>LED</td><td>IO8 (adjustable brightness) or straight to 3V3</td></tr>
+            <tr><td>SDO (MISO)</td><td><strong>Not connected</strong></td></tr>
+            <tr><td>T_* (touch)</td><td>Unused for now</td></tr>
+          </table></div>
+          <div class="callout">The ILI9488's MISO never goes high-impedance. Do not connect it.</div>
+          <p>All of these pins sit on the left header (J1) of the DevKitC-1. Do not use GPIO 26 to 37 (flash and octal PSRAM), 19/20 (native USB) or 43/44 (serial port).</p>
+          <h4>Sound</h4>
+          <p>You need a <strong>passive buzzer</strong>: + terminal on IO7, − terminal on GND. A power-hungry magnetic buzzer goes behind an NPN transistor (base tied to IO7 through 1 kΩ, with a diode across the buzzer). The pin is set in <code>firmware/src/sound.cpp</code>.</p>
+          <h4>The LEDs</h4>
+          <p>The disk LED is on IO5 and the network LED on IO6. Each access lights them for at least 40 ms so you have time to see it.</p>
+          <h4>If the image misbehaves</h4>
+          <ul>
+            <li>The pins can be changed in <code>firmware/include/lgfx_config.hpp</code>.</li>
+            <li>Garbled image: lower <code>TFT_SPI_FREQ</code>.</li>
+            <li>Upside-down image: replace <code>setRotation(1)</code> with <code>3</code> in <code>firmware/src/display.cpp</code>.</li>
+          </ul>
+        </article>
+
+        <!-- HDMI -->
+        <article class="chapter" id="hdmi">
+          <h3>HDMI video card</h3>
+          <p>Instead of the ILI9488, TERMINA can drive any HDMI screen. A <strong>Raspberry Pi Pico 2W</strong> acts as the video card, a bit like the picture chip of an 80s console: the ESP32 sends it a description of the screen over SPI, and the RP2350 builds each line just before its HSTX block sends it out as <strong>640×480 at 60 Hz</strong> DVI.</p>
+<pre>ESP32 ──SPI 20 MHz──▶ Pico 2W (scene, line by line) ──HSTX/DVI──▶ HDMI screen</pre>
+          <h4>What the Pico draws itself</h4>
+          <ul>
+            <li><strong>The shell</strong>: a text screen of cells, font, 16 colors and cursor. A typed character costs a few bytes on the link.</li>
+            <li><strong>The desktop</strong>: the background, each window, the taskbar and the open menu are 4-bit planes in the Pico's RAM. Moving or raising a window only changes positions; only rows whose contents changed travel.</li>
+            <li><strong>PICO-8</strong>: the 128×128 screen goes as it is (8 KB) and the Pico scales it up.</li>
+            <li><strong>The mouse pointer and the scanlines</strong>, in every mode.</li>
+          </ul>
+          <p>The rest (paint, screen savers, a desktop too full for the Pico's RAM) still goes as strips of 16 lines into a 640×480 framebuffer in 256 colors (RGB332). The text screen and the desktop show the exact theme colors. Text modes are 80×30 or 106×40 (<code>mode 106|80</code>).</p>
+          <h4>Pico 2W → HDMI plug</h4>
+          <p>Use a bare 19-pin HDMI male breakout. Each of the 8 signals goes through a <strong>270 Ω resistor</strong> (220 to 330 Ω also work). Keep the wires under 10 cm and twist each +/− pair together.</p>
+          <div class="table-wrap"><table>
+            <tr><th>Pico 2W</th><th>Signal</th><th>HDMI pin</th></tr>
+            <tr><td>GP12 / GP13</td><td>D0+ / D0−</td><td>7 / 9</td></tr>
+            <tr><td>GP14 / GP15</td><td>CK+ / CK−</td><td>10 / 12</td></tr>
+            <tr><td>GP16 / GP17</td><td>D2+ / D2−</td><td>1 / 3</td></tr>
+            <tr><td>GP18 / GP19</td><td>D1+ / D1−</td><td>4 / 6</td></tr>
+            <tr><td>GND</td><td>Shields and DDC ground</td><td>2, 5, 8, 11, 17</td></tr>
+            <tr><td>VBUS (5 V)</td><td>+5 V (some screens wait for it)</td><td>18</td></tr>
+          </table></div>
+          <h4>ESP32-S3 → Pico 2W</h4>
+          <div class="table-wrap"><table>
+            <tr><th>ESP32-S3</th><th>Pico 2W</th><th>Role</th></tr>
+            <tr><td>IO12</td><td>GP2</td><td>SCLK</td></tr>
+            <tr><td>IO11</td><td>GP3</td><td>MOSI</td></tr>
+            <tr><td>IO10</td><td>GP1</td><td>CS</td></tr>
+            <tr><td>IO13</td><td>GP4</td><td>READY</td></tr>
+            <tr><td>GND</td><td>GND</td><td></td></tr>
+          </table></div>
+<pre>pio run -d video -t upload
+pio run -d firmware -e esp32s3_hdmi -t upload -t monitor</pre>
+          <div class="callout info">Hold BOOTSEL while plugging the Pico in to flash it the first time. On its own, it shows a test pattern reading <code>TERMINA VIDEO 640x480 V2</code>: swapped colors mean two swapped data pairs, no image usually means a reversed pair or a missing resistor. Every second, the Pico prints its slowest line and the late lines on its USB serial port; the second number must stay at 0.</div>
+        </article>
+
+        <!-- Firmware -->
+        <article class="chapter" id="firmware">
+          <h3>Firmware</h3>
+          <p>Building and flashing go through PlatformIO:</p>
+<pre>pio run -d firmware -t upload -t monitor</pre>
+          <h4>Wi-Fi</h4>
+          <ul>
+            <li>Copy <code>firmware/include/secrets.example.h</code> to <code>secrets.h</code> and put your network in it.</li>
+            <li>You can also configure nothing. TERMINA then opens a <code>TERMINA-XXXX</code> access point (password <code>termina80</code>, IP <code>192.168.4.1</code>). Once the PC is connected, type:</li>
+          </ul>
+<pre>A&gt;wifi "MyNetwork" password</pre>
+          <p>The network is saved in NVS and the machine reboots onto it. Until Wi-Fi is up, the serial monitor (115200 baud) works as a keyboard.</p>
+          <div class="callout">Plug the USB cable into the port marked <strong>UART</strong>. The partition table is <code>firmware/partitions.csv</code>: 4 MB for the program, 11.9 MB for <code>A:</code>. A freshly flashed board formats <code>A:</code> on first boot.</div>
+        </article>
+
+        <!-- Keyboard -->
+        <article class="chapter" id="keyboard">
+          <h3>Keyboard and mouse</h3>
+          <p>The <code>termina-input</code> program finds the machine on its own through mDNS:</p>
+<pre>go run ./cmd/termina-input
+<span class="c"># or forcing the address</span>
+go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
+          <ul>
+            <li>When the window has focus, everything you type goes to TERMINA. AZERTY accents are translated on the PC side.</li>
+            <li>A click in the window captures the mouse and <kbd>F12</kbd> releases it.</li>
+            <li><code>-sens 1.5</code> sets the mouse sensitivity.</li>
+          </ul>
+          <h4>USB mouse</h4>
+          <p>A boot-protocol USB mouse can also plug straight into the port marked <strong>USB</strong> (IO19/IO20) through a USB-C OTG adapter. It works without <code>termina-input</code>, in the shell programs, PAINT and TERMINA WIN, next to the PC mouse.</p>
+          <div class="callout">Hubs are not supported. The port must supply 5 V: some DevKitC-1 clones need their <strong>USB-OTG</strong> pad closed, otherwise use an OTG adapter with its own power input. If the mouse LED stays off, power is the problem.</div>
+        </article>
+
+        <!-- Share -->
+        <article class="chapter" id="share">
+          <h3>Sharing files</h3>
+          <p><code>share on</code> starts a small file manager on port 80 and <code>share off</code> stops it. From any browser on the same network, open <strong>http://termina.local/</strong> (or the address <code>share on</code> prints).</p>
+          <ul>
+            <li>Browse <code>A:</code>, download, rename and delete files and folders, create folders.</li>
+            <li>Drop files or whole folders on the page to upload them. A file is written as <code>name.part</code> and only replaces the old version once complete.</li>
+            <li>The machine keeps running during a transfer: the server has its own task on core 0.</li>
+          </ul>
+          <div class="callout">There is no password: while sharing is on, anyone on the network can read and write <code>A:</code>. It is off at boot.</div>
+        </article>
+
+        <!-- Emulator -->
+        <article class="chapter" id="emulator">
+          <h3>Emulator</h3>
+          <p><code>termina-emu</code> runs the real firmware on the PC. The window serves as screen, keyboard, mouse and speaker. It is handy for trying a Lua program, an application or a theme without flashing the board.</p>
+          <p>The firmware's C++ code is compiled by cgo, so gcc is required. On Windows, use the MSYS2 one (<code>pacman -S mingw-w64-x86_64-gcc</code>).</p>
+<pre>go generate ./internal/emu &amp;&amp; PATH=/c/msys64/mingw64/bin:$PATH CGO_ENABLED=1 go run ./cmd/termina-emu</pre>
+          <div class="callout info">Run <code>go generate</code> before each build that follows a firmware change. The Go cache does not see the C++ sources included from <code>firmware/</code>, so the generator writes their fingerprint into <code>internal/emu/fw_*.cpp</code>. It also produces the built-in Lua programs.</div>
+          <ul>
+            <li>The <code>A:</code> drive is the <code>%AppData%\termina\A</code> directory (<code>-disk</code> option). NVS settings are stored next to it, in <code>nvs.txt</code>.</li>
+            <li>The mouse follows the PC pointer, without capture. <code>-scale 3</code> enlarges the window and <code>-mute</code> turns the sound off.</li>
+            <li><code>-type</code> types text after startup and <code>-shot f.png</code> saves the screen then quits. In <code>-type</code>: <code>\n</code> Enter, <code>\e</code> Esc, <code>\s</code> Ctrl+Esc, <code>\c</code> Ctrl+C, <code>\z</code> Ctrl+Z, <code>\u</code>/<code>\d</code> arrows, <code>\p</code> a one-second pause.</li>
+            <li>Wi-Fi is simulated and always connected. The browser goes through Go's network stack, which verifies TLS certificates. <code>ping</code> times a TCP connection to port 80 or 443.</li>
+            <li>The firmware is not modified: <code>internal/emu/hal/</code> replaces Arduino, LovyanGFX, LittleFS, Preferences, FreeRTOS and HTTPClient. With <code>TERMINA_MEM_SCALE=2</code>, the Lua memory limits are doubled, since a Lua object takes about twice as much room on a 64-bit PC.</li>
+          </ul>
+        </article>
+
+        <!-- Commands -->
+        <article class="chapter" id="commands">
+          <h3>Commands</h3>
+          <div class="table-wrap"><table>
+            <tr><th>Command</th><th>Effect</th></tr>
+            <tr><td><code>help</code></td><td>List of commands</td></tr>
+            <tr><td><code>ls [-la] [names]</code> <code>cat [f...]</code> <code>cp [-r] a... b</code> <code>mv a... b</code> <code>rm f</code> <code>touch f</code></td><td>Files: <code>-l</code> adds dates, <code>-a</code> shows hidden names; with several names or a directory as the last one, <code>cp</code> and <code>mv</code> put them in it</td></tr>
+            <tr><td><code>less [f]</code></td><td>Full-screen viewer, also of a pipe (<code>find | less</code>): <kbd>Space</kbd>/<kbd>b</kbd> pages, <code>/</code> searches, <kbd>n</kbd> next, <kbd>q</kbd> quits</td></tr>
+            <tr><td><code>find [dir] [-name pattern] [-type f|d]</code> <code>du [-s] [names]</code></td><td>Names below a directory (<code>find . -name "*.lua"</code>), space used</td></tr>
+            <tr><td><code>cd [dir]</code> <code>mkdir d</code> <code>rmdir d</code> <code>rm -r d</code></td><td>Directories. <code>cd ..</code> goes up and the prompt becomes <code>A:\dir&gt;</code></td></tr>
+            <tr><td><code>echo [-n] text</code></td><td>Print text (<code>&gt; f</code> writes a file, <code>&gt;&gt; f</code> appends)</td></tr>
+            <tr><td><code>grep [-ivnc] text [f...]</code> <code>wc [-lwc]</code> <code>head [-n N]</code> <code>tail [-n N]</code> <code>tee [-a] f</code></td><td>Text tools: they read their files or their input (<code>ls | grep lua</code>)</td></tr>
+            <tr><td><code>sort [-rnuf]</code> <code>uniq [-cd]</code> <code>diff a b</code></td><td>Sorted lines (reversed, by number, once each, any case), repeated lines once (with their count), changed lines</td></tr>
+            <tr><td><code>ps</code> <code>jobs</code> <code>fg</code> <code>bg</code> <code>kill [-SIG] %job|pid</code> <code>wait</code> <code>sleep s</code></td><td>Processes and jobs</td></tr>
+            <tr><td><code>export NAME=value</code> <code>unset NAME</code> <code>env</code></td><td>Variables, inherited by the programs started afterwards</td></tr>
+            <tr><td><code>alias name='cmd args'</code> <code>unalias name</code> <code>history [-c]</code></td><td>Aliases and command history</td></tr>
+            <tr><td><code>edit f</code></td><td>nano-style editor with Lua and shell highlighting, files up to 256 KB: <kbd>^S</kbd> save, <kbd>^X</kbd> exit · <kbd>Shift</kbd>+arrows select, <kbd>Alt</kbd>+<kbd>A</kbd> all · <kbd>^K</kbd> cut, <kbd>Alt</kbd>+<kbd>C</kbd> copy, <kbd>^U</kbd> paste (the selection, or the whole line) · <kbd>^W</kbd> search, <kbd>F3</kbd> next, <kbd>^R</kbd> replace · <kbd>^Z</kbd> undo, <kbd>^Y</kbd> redo · <kbd>^G</kbd> go to a line</td></tr>
+            <tr><td><code>theme green|amber|white|cga</code> <code>scan on|off</code> <code>mode 80|60</code> (<code>106|80</code> on HDMI) <code>bright 10-255</code></td><td>Display (settings remembered)</td></tr>
+            <tr><td><code>mem</code> <code>df</code> <code>uptime</code> <code>date</code> <code>ver</code> <code>sysinfo</code> <code>wifi</code></td><td>System information</td></tr>
+            <tr><td><code>sound on|off</code> <code>beep [Hz] [ms]</code></td><td>Sound. The BEL character (<kbd>^G</kbd>) beeps too</td></tr>
+            <tr><td><code>play tune|file</code></td><td>Plays a built-in RTTTL melody (<code>play</code> alone lists them) or a file on <code>A:</code></td></tr>
+            <tr><td><code>snake</code></td><td>Arrows or WASD/ZQSD, P to pause</td></tr>
+            <tr><td><code>paint</code></td><td>Left click: draw · right: erase · middle: eyedropper · wheel: size · S: save · C: clear · Esc: quit</td></tr>
+            <tr><td><code>web [search|address]</code></td><td>Browser: ↑/↓ and Enter in the results, N for the next page. In a page: Tab from link to link, Enter or click to follow, Backspace to go back, <code>/</code> to search, G to type an address</td></tr>
+            <tr><td><code>telnet host [port]</code></td><td>ANSI telnet client (<code>telnet towel.blinkenlights.nl</code>), <kbd>Ctrl</kbd>+<kbd>C</kbd> to quit</td></tr>
+            <tr><td><code>share on|off</code></td><td>Web file manager on port 80</td></tr>
+            <tr><td><code>run script [args]</code> or <code>script [args]</code></td><td>Runs <code>script.lua</code> from <code>A:</code> (<kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts it)</td></tr>
+            <tr><td><code>sh script [args]</code> or <code>script [args]</code>, <code>source script</code></td><td>Runs the shell script <code>script.sh</code></td></tr>
+            <tr><td><code>pico8 game</code></td><td>Plays a PICO-8 cartridge</td></tr>
+            <tr><td><code>git ...</code></td><td>Git client</td></tr>
+            <tr><td><code>pkg ...</code></td><td>Package manager</td></tr>
+            <tr><td><code>win</code></td><td>TERMINA WIN graphical desktop</td></tr>
+            <tr><td><code>reboot</code></td><td>Reboot</td></tr>
+          </table></div>
+        </article>
+
+        <!-- Shell -->
+        <article class="chapter" id="shell">
+          <h3>Processes and jobs</h3>
+          <p>Each command runs in a process of its own, and several run at the same time.</p>
+<pre>A&gt;cat log.txt | grep -i error | wc -l
+3
+A&gt;git clone https://github.com/rxi/json.lua &gt; clone.log 2&gt;&amp;1 &amp;
+[1] 5
+A&gt;jobs
+[1]+  Running              git clone https://github.com/rxi/json.lua &gt; clone.log 2&gt;&amp;1
+A&gt;mkdir out &amp;&amp; echo "shell pid $$" &gt; out/info.txt</pre>
+          <div class="table-wrap"><table>
+            <tr><th>Syntax</th><th>Meaning</th></tr>
+            <tr><td><code>a | b | c</code></td><td>Pipeline: each command's output feeds the next one</td></tr>
+            <tr><td><code>&gt; f</code> <code>&gt;&gt; f</code> <code>&lt; f</code> <code>2&gt; f</code> <code>2&gt;&amp;1</code></td><td>Output to a file, appended, input from a file, errors to a file, errors with the output</td></tr>
+            <tr><td><code>a ; b</code> <code>a &amp;&amp; b</code> <code>a || b</code></td><td>One after the other, <code>b</code> only if <code>a</code> succeeded, only if it failed</td></tr>
+            <tr><td><code>cmd &amp;</code></td><td>In the background: the prompt comes back at once, <code>[1]+ Done</code> shows when it ends</td></tr>
+            <tr><td><code>"text $X"</code> <code>'text $X'</code></td><td>Variables are replaced between double quotes, not between single ones</td></tr>
+            <tr><td><code>$NAME</code> <code>${NAME}</code> <code>$?</code> <code>$$</code> <code>$!</code></td><td>A variable, the last exit code, the shell's pid, the last background pid</td></tr>
+            <tr><td><code>NAME=value cmd</code></td><td>A variable for this command only</td></tr>
+          </table></div>
+          <p><kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts the foreground job and <kbd>Ctrl</kbd>+<kbd>Z</kbd> stops it. <code>fg %1</code> brings a job back, <code>bg %1</code> lets a stopped one go on behind, <code>kill %1</code> ends it (<code>kill -l</code> lists the signals). A background job that waits for a key stops until <code>fg</code>. Jobs keep running in TERMINA WIN, and a job started in a desktop Terminal ends (HUP) when its window closes.</p>
+          <p><code>ps</code> shows the processes: <code>R</code> running, <code>S</code> sleeping, <code>T</code> stopped, <code>+</code> has the keyboard.</p>
+          <h4>At the prompt</h4>
+          <p>A long line continues on the next rows. <kbd>↑</kbd>/<kbd>↓</kbd> go through the last 200 lines (<code>history</code> lists them), and <kbd>^R</kbd> searches them: type part of a command, <kbd>^R</kbd> again for an older one, <kbd>Enter</kbd> runs it. <kbd>Tab</kbd> completes names. <kbd>^U</kbd>, <kbd>^K</kbd> and <kbd>^W</kbd> cut to the start, to the end or the previous word into the clipboard, <kbd>^Y</kbd> pastes it, so text copied in <code>edit</code> or Notepad can be pasted here.</p>
+          <p>Unquoted <code>*</code>, <code>?</code> and <code>[abc]</code> become the matching file names (<code>ls *.lua</code>, <code>rm old/*.txt</code>); quotes keep them as they are. <code>alias ll='ls -l'</code> gives a command a short name. If a <code>/.profile</code> script exists, the prompt runs it when it starts: the place for aliases and variables.</p>
+          <div class="callout info">Under the hood, each process is a FreeRTOS task with its own stack, but only one runs at a time: they take turns whenever the running one waits (keyboard, <code>sys.sleep</code>, a full pipe), or every 20 ms for a Lua program. The ESP32-S3 has no MMU, so separate Lua states keep programs apart. At most 12 processes run at once, each needing about 80 KB of internal RAM. Commands that change the shell (<code>cd</code>, <code>export</code>, <code>fg</code>…) or take over the screen cannot be piped or put in the background.</div>
+        </article>
+
+        <!-- Scripts -->
+        <article class="chapter" id="scripts">
+          <h3>Shell scripts</h3>
+          <p>The shell understands a small sh/bash language, at the prompt as in files. A <code>name.sh</code> file in the current directory or in <code>/</code> runs as the command <code>name</code>, in its own process: it can be piped, put in the background and interrupted like any command. <code>source name.sh</code> (or <code>. name.sh</code>) runs it inside the shell instead, keeping its variables, functions and directory. An unfinished command at the prompt goes on on the next line after a <code>&gt; </code>.</p>
+<pre class="amber"># count.sh: counts the lines of the files given
+total=0
+for f in "$@"; do
+  if [ ! -f "$f" ]; then echo "$f: not found" &gt;&amp;2; continue; fi
+  n=$(wc -l &lt; "$f")
+  echo "$f: $((n))"
+  total=$((total + n))
+done
+echo "total: $total"</pre>
+          <div class="table-wrap"><table>
+            <tr><th>Construct</th><th>Meaning</th></tr>
+            <tr><td><code>if c; then a; elif d; then b; else e; fi</code></td><td><code>c</code> succeeds when its exit code is 0 (<code>test</code> or <code>[ ]</code> compares)</td></tr>
+            <tr><td><code>while c; do a; done</code> <code>until c; do a; done</code></td><td>Loops, with <code>break [N]</code> and <code>continue [N]</code></td></tr>
+            <tr><td><code>for x in a b c; do echo $x; done</code></td><td><code>for x; do</code> goes over the arguments</td></tr>
+            <tr><td><code>case $x in a*|b) cmd;; *) cmd;; esac</code></td><td>Patterns <code>*</code>, <code>?</code>, <code>[a-z]</code>, <code>[!x]</code></td></tr>
+            <tr><td><code>name() { cmd; }</code></td><td>Function: <code>$1</code>… are its arguments, <code>local x=1</code>, <code>return [N]</code></td></tr>
+            <tr><td><code>{ a; b; } &gt; f</code> <code>( cd d; a )</code></td><td>A group with its redirections; a subshell</td></tr>
+            <tr><td><code>$1</code>…<code>${10}</code> <code>$#</code> <code>"$@"</code> <code>$*</code> <code>$0</code> <code>shift [N]</code></td><td>The script's arguments</td></tr>
+            <tr><td><code>$(cmd)</code> <code>`cmd`</code></td><td>The output of a command</td></tr>
+            <tr><td><code>$((2 * (x + 1)))</code></td><td>Integer arithmetic, comparisons, <code>&amp;&amp; || !</code></td></tr>
+            <tr><td><code>${X:-d}</code> <code>${X:=d}</code> <code>${X:+o}</code> <code>${#X}</code></td><td>Default, assigned default, alternative, length</td></tr>
+            <tr><td><code>test</code> / <code>[ ]</code></td><td><code>-e -f -d -s</code> files, <code>-z -n</code> text, <code>= !=</code>, <code>-eq -lt -gt</code>…, <code>! -a -o</code></td></tr>
+            <tr><td><code>read [-p prompt] a b</code></td><td>Reads a line into variables (<code>while read l; do …; done &lt; f</code>)</td></tr>
+          </table></div>
+          <p>Unquoted <code>$X</code> and <code>$(...)</code> results are split into words at blanks. Unquoted <code>*</code>, <code>?</code> and <code>[...]</code> expand to file names, and a pattern that matches nothing stays as typed. Ctrl+C and Ctrl+Z act on the whole script, since its commands stay in its process group. <code>edit</code> highlights keywords, variables, strings and comments in <code>.sh</code> files and files with a shell <code>#!</code> line.</p>
+        </article>
+
+        <!-- Lua -->
+        <article class="chapter" id="lua">
+          <h3>Programming in Lua</h3>
+          <p>Programs are <code>.lua</code> files on the <code>A:</code> drive. Type <code>edit game.lua</code> to write one, then <code>game</code> to run it. At boot, <code>hello.lua</code> and <code>snake.lua</code> are copied to <code>A:</code> if they are not there already. They are examples to read and modify.</p>
+<pre class="amber">-- stars.lua
+term.cls()
+while true do
+  local ev = key.poll()
+  if ev and ev.type == "key" and ev.key == "esc" then break end
+  term.cell(sys.random(term.cols()) - 1, sys.random(term.rows() - 1), "*", 14)
+  sys.sleep(30)   -- yields: the screen refreshes
+end</pre>
+          <p>It is standard Lua 5.4, with 32-bit numbers and the <code>string</code>, <code>table</code>, <code>math</code>, <code>utf8</code> and <code>coroutine</code> libraries. <code>io</code> and <code>os</code> are TERMINA's own: standard input and output, environment and processes. A script gets at most 1 MB of memory, taken from PSRAM. If it goes over, it stops with "Out of memory" and the rest of the machine keeps running. Coordinates start at 0, row 0 is the status bar and an attribute is <code>background * 16 + foreground</code>.</p>
+          <div class="table-wrap"><table>
+            <tr><th>Module</th><th>Functions</th></tr>
+            <tr><td>global</td><td><code>print(...)</code>, <code>write(...)</code>, <code>require "mod"</code> (loads <code>mod.lua</code>), the <code>arg</code> table (<code>arg[0]</code> is the script)</td></tr>
+            <tr><td><code>term</code></td><td><code>cls()</code>, <code>put(x, y, text [, attr])</code>, <code>cell(x, y, ch [, attr])</code>, <code>char(x, y)</code>, <code>fill(y [, ch, attr])</code>, <code>cursor([x, y])</code>, <code>showcursor(b)</code>, <code>attr([a])</code>, <code>cols()</code>, <code>rows()</code></td></tr>
+            <tr><td><code>key</code></td><td><code>poll()</code> (event or <code>nil</code>), <code>wait()</code>. Events: <code>{type="char", ch="é"}</code>, <code>{type="key", key="up", ctrl, shift, alt}</code>, <code>{type="mouse", button, down}</code>, <code>{type="wheel", n}</code></td></tr>
+            <tr><td><code>mouse</code></td><td><code>pos()</code> → x, y in pixels; <code>down([button])</code>; <code>show(b)</code></td></tr>
+            <tr><td><code>sound</code></td><td><code>tone(hz [, ms])</code>, <code>play(rtttl)</code>, <code>stop()</code>, <code>busy()</code>, <code>tune(name)</code></td></tr>
+            <tr><td><code>fs</code></td><td><code>read</code>, <code>write</code>, <code>append</code>, <code>exists</code>, <code>remove</code>, <code>size</code>, <code>list</code>, <code>rename</code>, <code>info()</code>; directories: <code>mkdir</code>, <code>rmdir</code>, <code>isdir</code>, <code>dir([d])</code>, <code>rmtree</code>, <code>cwd()</code>; <code>open(f [, mode])</code> → <code>read(n|"a")</code>, <code>write(s)</code>, <code>seek([pos])</code>, <code>size()</code>, <code>close()</code></td></tr>
+            <tr><td><code>net</code></td><td><code>request{url, method, headers, body | bodyfile, sink | file}</code> → HTTP code, type (or <code>nil</code>, message). Streaming HTTP(S), <code>sink(chunk)</code> receives the response; <code>connect(host, port [, ms])</code> → TCP socket with <code>send</code>, non-blocking <code>recv</code>, <code>close</code></td></tr>
+            <tr><td><code>io</code></td><td>Standard input and output (terminal, pipe or file): <code>read([fmt])</code> with <code>"l"</code>, <code>"L"</code>, <code>"a"</code>, <code>"n"</code>; <code>lines()</code>; <code>write(...)</code>, <code>io.stdout:write</code>, <code>io.stderr:write</code></td></tr>
+            <tr><td><code>os</code></td><td><code>getpid()</code>, <code>getenv(name)</code>, <code>setenv(name, value)</code>, <code>environ()</code>, <code>exit([code])</code>, <code>spawn(command line)</code> → pid, <code>wait([pid])</code> → pid, exit code, <code>kill(pid [, signal])</code></td></tr>
+            <tr><td><code>sys</code></td><td><code>millis()</code>, <code>sleep(ms)</code>, <code>yield()</code>, <code>random([n])</code>, <code>mem()</code>, <code>time()</code>, <code>epoch()</code>, <code>clipboard()</code>, <code>setclipboard(text)</code></td></tr>
+            <tr><td><code>store</code></td><td><code>get(key [, default])</code>, <code>set(key, value)</code>: numbers or strings kept in NVS, keys of 15 characters at most</td></tr>
+            <tr><td><code>zlib</code> <code>sha1</code> <code>gitc</code></td><td>Building blocks of the Git client (details in <code>firmware/src/lua/libgit.h</code>)</td></tr>
+          </table></div>
+          <p>A Lua program is a good pipeline citizen:</p>
+<pre class="amber">-- upper.lua: ls | upper
+for line in io.lines() do
+  io.write(line:upper(), "\n")
+end</pre>
+          <div class="callout info">A game loop must call <code>sys.yield()</code>, <code>key.wait()</code> or <code>sys.sleep()</code> so that the screen refreshes. The programs in <code>firmware/lua/</code> are built into the firmware: they are updated with each flash and take no room on <code>A:</code>.</div>
+        </article>
+
+        <!-- PICO-8 -->
+        <article class="chapter" id="pico8">
+          <h3>PICO-8 carts</h3>
+          <p><code>pico8 game</code> plays a cartridge from <code>A:</code>: <code>game.p8</code> (text) or <code>game.p8.png</code> (the images of the Lexaloffle BBS), the extension is optional. Carts arrive like any file: <code>git clone</code>, <code>net.request{url=..., file=...}</code>, <code>share on</code>, or the emulator's <code>A:</code> directory. The 128×128 screen is shown with double dots (triple on HDMI), at 30 or 60 frames per second.</p>
+          <div class="table-wrap"><table>
+            <tr><th>Button</th><th>Keys</th></tr>
+            <tr><td>⬅️ ➡️ ⬆️ ⬇️</td><td>Arrows</td></tr>
+            <tr><td>🅾️</td><td>Z, C or N</td></tr>
+            <tr><td>❎</td><td>X, V or M</td></tr>
+            <tr><td>Player 2</td><td>S F E D, A (🅾️), Q (❎)</td></tr>
+            <tr><td>Quit</td><td>Esc or Ctrl+C</td></tr>
+          </table></div>
+          <p>The player is not PICO-8 and does not include it: it is a separate implementation of the cartridge format and the API, with its own 3×5 font. A cart's code is translated to Lua 5.4 when it starts, and <code>cartdata</code> saves go to <code>A:/cdata/</code>.</p>
+          <div class="callout">Limits: numbers are 32-bit floats rather than 16.16 fixed point; sound is one buzzer note at a time, without instruments or effects; heavy carts skip <code>_draw</code> to keep their speed (<code>stat(7)</code> shows the frames really drawn); no pause menu, <code>run</code>, <code>extcmd</code>, custom fonts or kana.</div>
+        </article>
+
+        <!-- Git -->
+        <article class="chapter" id="git">
+          <h3>Git</h3>
+          <p><code>git</code> is a real Git client written in Lua. It speaks the smart HTTP(S) protocol of GitHub, GitLab or Gitea. The repository it creates is an ordinary Git repository, which the PC's <code>git</code> can read.</p>
+<pre>A&gt;git config user.name "Ada Lovelace"
+A&gt;git config user.email ada@example.org
+A&gt;git clone https://github.com/rxi/json.lua
+A&gt;cd json.lua
+A:\json.lua&gt;edit README.md
+A:\json.lua&gt;git add .
+A:\json.lua&gt;git commit -m "From TERMINA"
+A:\json.lua&gt;git config user.login mylogin
+A:\json.lua&gt;git config token ghp_xxxxxxxx
+A:\json.lua&gt;git push</pre>
+          <p>Other commands: <code>status</code>, <code>diff [--cached]</code>, <code>log [-n N]</code>, <code>show [commit]</code>, <code>rm f</code>, <code>restore [--staged] f</code>, <code>branch [name]</code>, <code>switch branch</code>, <code>pull</code>. The name, email, login and token are kept in NVS and never in the repository. For GitHub, the token is a <em>personal access token</em> with write access to the repository.</p>
+          <div class="callout">A few limitations: the clone is shallow (latest commit only) and objects are not compressed, so the repository takes about twice the size of the files. <code>pull</code> can only fast-forward: if both sides have different commits, it stops without merging. Committing requires network time (NTP).</div>
+          <p>To develop the client on the PC, there is a test bench: <code>sh firmware/test/host/build.sh</code>, then <code>hostlua.exe --root /tmp/disk firmware/lua/git.lua clone &lt;url&gt;</code>.</p>
+        </article>
+
+        <!-- Packages -->
+        <article class="chapter" id="pkg">
+          <h3>Packages</h3>
+          <p><code>pkg</code> installs Lua programs shared by the community, from the <a href="https://github.com/bjorand/termina-packages">termina-packages</a> registry published on GitHub Pages.</p>
+<pre>pkg update            <span class="c">fetch the package list</span>
+pkg list [-i]         <span class="c">available packages (-i: installed)</span>
+pkg search &lt;word&gt;     <span class="c">search names and descriptions</span>
+pkg info &lt;name&gt;       <span class="c">details of a package</span>
+pkg install &lt;name&gt;    <span class="c">install, with its dependencies</span>
+pkg upgrade [name]    <span class="c">upgrade (everything by default)</span>
+pkg remove [-f] &lt;name&gt; <span class="c">uninstall</span>
+pkg url [address]     <span class="c">change registry (fork, test server)</span></pre>
+          <p>A package lands in <code>A:\pkg\&lt;name&gt;\</code>, each file checked against its SHA-1 sum. Its commands run at the prompt like other programs, <code>require "name.module"</code> finds its modules, and its <code>-- @app</code> files appear on the desktop. To publish one, see the registry's <code>CONTRIBUTING.md</code>.</p>
+        </article>
+
+        <!-- WIN -->
+        <article class="chapter" id="win">
+          <h3>TERMINA WIN</h3>
+          <p><code>win</code> starts a Windows 3.1-style desktop, driven by the mouse. There are icons to double-click, a taskbar with a <strong>Start</strong> button and a clock, and windows you move by the title bar and resize by the corner. Colors follow the theme.</p>
+          <ul>
+            <li>Shortcuts: <kbd>Alt</kbd>+<kbd>Tab</kbd>, <kbd>Alt</kbd>+<kbd>F4</kbd>, <kbd>Ctrl</kbd>+<kbd>Esc</kbd> for Start.</li>
+            <li>Bundled applications: <strong>Files</strong>, <strong>Notepad</strong> (<kbd>Shift</kbd>+arrows select, <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>X</kbd>/<kbd>V</kbd> use the clipboard), <strong>Clock</strong>, <strong>Settings</strong> (theme, wallpaper, screen saver) and <strong>Terminal</strong>.</li>
+            <li><strong>Terminal</strong> is a real text terminal in a window, with its own current directory: commands, Lua programs (<code>git</code>, <code>pkg</code>, your scripts), <code>telnet</code>, <code>edit</code>, <code>snake</code> and <code>sysinfo</code> run inside it, live, keyboard included, pipelines too. Closing the window sends HUP to its jobs. Only <code>paint</code> and <code>web</code> take over the screen then give the desktop back.</li>
+            <li>Start &gt; <em>Exit to DOS</em> returns to the prompt.</li>
+          </ul>
+          <h4>Writing an application</h4>
+          <p>An application is a <code>.lua</code> file on <code>A:</code> whose header contains <code>-- @app Name</code>, and optionally <code>-- @icon name</code>. All applications run at the same time, each in its own coroutine. An application must yield through <code>win.event()</code> or <code>sys.sleep()</code>, otherwise it is stopped after 4 seconds. An error only closes the application at fault.</p>
+<pre class="amber">-- @app Hello
+local f = win.open{title = "Hello", w = 160, h = 60}
+f:cls(15)
+f:text(10, 20, "Hello!", 1, nil, "vga")
+while win.event().type ~= "close" do end</pre>
+          <div class="table-wrap"><table>
+            <tr><th>Object</th><th>Functions</th></tr>
+            <tr><td><code>win</code></td><td><code>open{title, w, h, x, y, resizable, bg}</code>, <code>event([ms])</code>, <code>timer(ms)</code>, <code>message</code>, <code>ask</code>, <code>input</code>, <code>run(file, ...)</code>, <code>apps()</code>, <code>rescan()</code>, <code>textsize</code>, <code>screen()</code>, <code>settings()</code>, <code>set</code>, <code>choices</code>, <code>dos(line [, dir])</code>, <code>quit()</code></td></tr>
+            <tr><td>window <code>f</code></td><td><code>cls</code>, <code>pixel</code>, <code>get</code>, <code>line</code>, <code>rect</code>/<code>box</code>, <code>circle</code>, <code>bevel</code>, <code>text</code>, <code>icon</code>, <code>scroll</code>, <code>size</code>, <code>title</code>, <code>resize</code>, <code>focus</code>, <code>close</code>, <code>isopen</code></td></tr>
+            <tr><td>events</td><td><code>mouse</code>, <code>drag</code>, <code>wheel</code>, <code>key</code>, <code>char</code>, <code>resize</code>, <code>close</code>, <code>timer</code>; the <code>win</code> field identifies the window</td></tr>
+          </table></div>
+          <p>The 16 colors are the theme's (0 black, 1 blue, 7 gray, 8 dark gray, 15 white…). Each window keeps its image in memory, at 4 bits per dot.</p>
+        </article>
+
+        <!-- Code -->
+        <article class="chapter" id="code">
+          <h3>Code layout</h3>
+          <div class="table-wrap"><table>
+            <tr><th>Path</th><th>Role</th></tr>
+            <tr><td><code>proto/</code></td><td>8-byte frames (Go, tested). Its C mirror is <code>firmware/include/proto.h</code></td></tr>
+            <tr><td><code>cmd/termina-input/</code></td><td>Go client: ebiten for capture, zeroconf for discovery</td></tr>
+            <tr><td><code>internal/capture/</code></td><td>ebiten keyboard and mouse → frames, shared with the emulator</td></tr>
+            <tr><td><code>cmd/termina-emu/</code> <code>internal/emu/</code></td><td>The emulator; <code>hal/</code> simulates the hardware</td></tr>
+            <tr><td><code>firmware/src/display.*</code></td><td>Rendering in strips of 16 lines, without a full framebuffer: only modified strips go back to the display. <code>display_hdmi.*</code> talks to the Pico</td></tr>
+            <tr><td><code>video/</code></td><td>Pico 2W video card firmware; the link protocol is <code>video/include/vlink.h</code></td></tr>
+            <tr><td><code>firmware/src/proc.*</code></td><td>Processes: FreeRTOS tasks, file descriptors, pipes, signals, environment</td></tr>
+            <tr><td><code>firmware/src/term.*</code></td><td>CP437 text grid, ANSI subset, cursor, themes</td></tr>
+            <tr><td><code>firmware/src/net.*</code> <code>input.*</code></td><td>Wi-Fi, mDNS, TCP server, event queue</td></tr>
+            <tr><td><code>firmware/src/http.*</code> <code>html.*</code></td><td>HTTP(S) client and HTML tokenizer, streaming</td></tr>
+            <tr><td><code>firmware/src/usbmouse.*</code> <code>webfs.*</code></td><td>USB host mouse driver; web file manager on port 80</td></tr>
+            <tr><td><code>firmware/src/shell.cpp</code> <code>shparse.cpp</code> <code>boot.cpp</code> <code>apps/</code></td><td>The "system", its shell language parser and its programs</td></tr>
+            <tr><td><code>firmware/src/pico/</code></td><td>PICO-8 player: cart loader, dialect translator, font, API</td></tr>
+            <tr><td><code>firmware/src/gui/</code></td><td>TERMINA WIN: <code>gfx</code>, <code>wm</code>, <code>wallpaper</code>, <code>lapps</code></td></tr>
+            <tr><td><code>firmware/src/lua/</code></td><td>Lua 5.4.7 engine (capped memory, Ctrl+C) and libraries</td></tr>
+            <tr><td><code>firmware/lua/</code></td><td>Built-in Lua programs (the Git client, <code>pkg</code>)</td></tr>
+            <tr><td><code>firmware/test/host/</code></td><td>Lua test bench on the PC</td></tr>
+            <tr><td><code>case/</code></td><td>OpenSCAD case, board tray and STL files</td></tr>
+          </table></div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <b>TERMINA <span>80</span></b>
+    <span>An 8-bit microcomputer at heart, 32-bit in body.</span>
+    <span><a href="../">Vendetta 84</a> · 2026 · <a href="mailto:hello@vendetta84.com">hello@vendetta84.com</a></span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  // active table of contents entry
+  const links = [...document.querySelectorAll(".toc a")];
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) links.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + en.target.id));
+    });
+  }, { rootMargin: "-30% 0px -60% 0px" });
+  document.querySelectorAll(".chapter").forEach((c) => obs.observe(c));
+})();
+</script>
+</body>
+</html>
