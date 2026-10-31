@@ -512,7 +512,7 @@ A&gt;git clone https://github.com/rxi/json.lua &amp;
           </table></div>
 <pre>pio run -d video -t upload
 pio run -d firmware -t upload -t monitor</pre>
-          <div class="callout info">Hold BOOTSEL while plugging the Pico in to flash it the first time. On its own, it shows a test pattern reading <code>TERMINA VIDEO 640x480 V4</code>: swapped colors mean two swapped data pairs, no image usually means a reversed pair or a missing resistor. Every second, the Pico prints its slowest line and the late lines on its USB serial port; the second number must stay at 0.</div>
+          <div class="callout info">Hold BOOTSEL while plugging the Pico in to flash it the first time. On its own, it shows a test pattern reading <code>TERMINA VIDEO 640x480 V5</code>: swapped colors mean two swapped data pairs, no image usually means a reversed pair or a missing resistor. Every second, the Pico prints its slowest line and the late lines on its USB serial port; the second number must stay at 0.</div>
         </article>
 
         <!-- Firmware -->
@@ -696,7 +696,7 @@ end</pre>
             <tr><td><code>os</code></td><td><code>getpid()</code>, <code>getenv(name)</code>, <code>setenv(name, value)</code>, <code>environ()</code>, <code>exit([code])</code>, <code>spawn(command line)</code> → pid, <code>wait([pid])</code> → pid, exit code, <code>kill(pid [, signal])</code></td></tr>
             <tr><td><code>sys</code></td><td><code>millis()</code>, <code>sleep(ms)</code>, <code>yield()</code>, <code>random([n])</code>, <code>mem()</code>, <code>time()</code>, <code>epoch()</code>, <code>clipboard()</code>, <code>setclipboard(text)</code></td></tr>
             <tr><td><code>store</code></td><td><code>get(key [, default])</code>, <code>set(key, value)</code>: numbers or strings kept in NVS, keys of 15 characters at most</td></tr>
-            <tr><td><code>iso</code></td><td>Isometric world drawn by the video card: <code>open()</code>, <code>close()</code>, <code>load(art [, at])</code> (colors and up to 128 sprites, raw or run-length, in a 48 KB store), <code>info()</code> (the store's layout and limits), <code>color(i, rgb)</code>, <code>map(w, h, tiles)</code>, <code>tile(x, y, ground, object)</code>, <code>frame{x, y, status, people}</code> (up to 64 people). Only the camera and the people travel each frame, plus the bytes of the store that changed; the Pico draws what changed.</td></tr>
+            <tr><td><code>iso</code></td><td>Isometric world drawn by the video card: <code>open()</code>, <code>close()</code>, <code>load(art [, at])</code> (colors and up to 128 sprites, raw or run-length, in a 48 KB store), <code>info()</code> (the store's layout and what the card can do), <code>color(i, rgb)</code>, <code>map(w, h, tiles)</code>, <code>tile(x, y, ground, object)</code>, <code>frame{x, y, status, people, tile, see}</code> (up to 64 people; <code>tile</code>: ground diamonds 16 or 32 dots high; <code>see</code>: a circle where objects in front of the player let it show through). Only the camera and the people travel each frame, plus the bytes of the store that changed; the Pico draws what changed.</td></tr>
             <tr><td><code>zlib</code> <code>sha1</code> <code>gitc</code></td><td>Building blocks of the Git client (details in <code>firmware/src/lua/libgit.h</code>)</td></tr>
           </table></div>
           <p>A Lua program is a good pipeline citizen:</p>
