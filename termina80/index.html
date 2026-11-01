@@ -413,7 +413,7 @@ A&gt;git clone https://github.com/rxi/json.lua &amp;
       <dt>Display</dt><dd>Any HDMI screen, <b>640×480 at 60 Hz</b> DVI from a Raspberry Pi Pico 2W video card. 106×40 text with the 6×8 font, or 80×30 with the 8×16 VGA font.</dd>
       <dt>Storage</dt><dd><b>11.9 MB</b> <code>A:</code> drive on LittleFS.</dd>
       <dt>Software</dt><dd><b>Lua 5.4</b> with 32-bit numbers, 1 MB per program. Up to <b>12 processes</b> with pipes, signals and job control.</dd>
-      <dt>Sound</dt><dd>Passive buzzer, RTTTL melodies. Disk and network LEDs.</dd>
+      <dt>Sound</dt><dd>Passive buzzer, RTTTL melodies. Disk and network LEDs, and an optional OLED status screen.</dd>
       <dt>Input</dt><dd>Keyboard and mouse from the PC over <b>TCP 2323</b>, 8-byte frames, mDNS discovery <code>_termina._tcp</code>. Optional USB boot-protocol mouse.</dd>
       <dt>Connections</dt><dd>
         <div class="flow"><span>PC · termina-input</span>→ Wi-Fi · TCP 2323 →<span class="on">ESP32</span></div>
@@ -470,11 +470,13 @@ A&gt;git clone https://github.com/rxi/json.lua &amp;
         <!-- Wiring -->
         <article class="chapter" id="wiring">
           <h3>Wiring</h3>
-          <p>The screen is any HDMI display, driven by the Pico 2W video card (next chapter). The rest of the machine is a buzzer and two LEDs. All of these pins sit on the left header (J1) of the DevKitC-1. Do not use GPIO 26 to 37 (flash and octal PSRAM), 19/20 (native USB) or 43/44 (serial port).</p>
+          <p>The screen is any HDMI display, driven by the Pico 2W video card (next chapter). The rest of the machine is a buzzer, two LEDs and an optional status screen. All of these pins sit on the left header (J1) of the DevKitC-1. Do not use GPIO 26 to 37 (flash and octal PSRAM), 19/20 (native USB) or 43/44 (serial port).</p>
           <h4>Sound</h4>
           <p>You need a <strong>passive buzzer</strong>: + terminal on IO7, − terminal on GND. A power-hungry magnetic buzzer goes behind an NPN transistor (base tied to IO7 through 1 kΩ, with a diode across the buzzer). The pin is set in <code>firmware/src/sound.cpp</code>.</p>
           <h4>The LEDs</h4>
           <p>The disk LED is on IO5 and the network LED on IO6. Each access lights them for at least 40 ms so you have time to see it.</p>
+          <h4>The status screen</h4>
+          <p>An optional <strong>0.96" SSD1306 128×64 I2C OLED</strong> (address 0x3C) shows how busy the machine is: SDA on IO8, SCL on IO18, VCC on 3V3, GND on GND. Once a second it draws the load of the ESP32's two cores, its free heap and PSRAM, then the load of the video card's two cores and its free memory (card V10 or later), and the frame rate of the isometric world while one is running. Without it, the console starts as usual. The same CPU figures are in <code>sysinfo</code> and in Lua's <code>sys.load()</code>.</p>
         </article>
 
         <!-- HDMI -->
@@ -513,8 +515,8 @@ A&gt;git clone https://github.com/rxi/json.lua &amp;
           </table></div>
 <pre>pio run -d video -t upload
 pio run -d firmware -t upload -t monitor</pre>
-          <div class="callout info">Hold BOOTSEL while plugging the Pico in to flash it the first time. On its own, it shows a test pattern reading <code>TERMINA VIDEO 640x480 V8</code>: swapped colors mean two swapped data pairs, no image usually means a reversed pair or a missing resistor. Every second, the Pico prints its slowest line and the late lines on its USB serial port; the second number must stay at 0. It also counts its drawing work, which the ESP32 reads back (protocol V8).</div>
-          <div class="callout info">Flash both boards after an update. <code>ver</code> and <code>sysinfo</code> show the video card's version next to the firmware's, read over the MISO wire: <code>Video card 1.3.3, protocol V8</code> when both match, and <code>flash video/</code> when they differ or when the card does not answer on MISO (no wire, or a card older than V7).</div>
+          <div class="callout info">Hold BOOTSEL while plugging the Pico in to flash it the first time. On its own, it shows a test pattern reading <code>TERMINA VIDEO 640x480 V10</code>: swapped colors mean two swapped data pairs, no image usually means a reversed pair or a missing resistor. Every second, the Pico prints its slowest line and the late lines on its USB serial port; the second number must stay at 0. It also counts its drawing work (protocol V8) and the busy time of its two cores (V10), which the ESP32 reads back.</div>
+          <div class="callout info">Flash both boards after an update. <code>ver</code> and <code>sysinfo</code> show the video card's version next to the firmware's, read over the MISO wire: <code>Video card 1.5.0, protocol V10</code> when both match, and <code>flash video/</code> when they differ or when the card does not answer on MISO (no wire, or a card older than V7).</div>
         </article>
 
         <!-- Firmware -->
@@ -573,6 +575,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <li>The mouse follows the PC pointer, without capture. <code>-scale 1</code> makes the window 640×480 (the default is twice that) and <code>-mute</code> turns the sound off.</li>
             <li><code>-type</code> types text after startup and <code>-shot f.png</code> saves the screen then quits. In <code>-type</code>: <code>\n</code> Enter, <code>\e</code> Esc, <code>\s</code> Ctrl+Esc, <code>\c</code> Ctrl+C, <code>\z</code> Ctrl+Z, <code>\u</code>/<code>\d</code> arrows, <code>\p</code> a one-second pause.</li>
             <li>Wi-Fi is simulated and always connected. The browser goes through Go's network stack, which verifies TLS certificates. <code>ping</code> times a TCP connection to port 80 or 443.</li>
+            <li>Below the screen, a front panel shows the disk and network LEDs and the OLED status screen, drawn by the firmware's own code on a simulated SSD1306. <code>-panel=false</code> hides it. The CPU loads are the time the threads of each core take on the PC; the video card's free memory is not simulated and reads 0K.</li>
             <li>The firmware is not modified: <code>internal/emu/hal/</code> replaces Arduino, LittleFS, Preferences, FreeRTOS, HTTPClient and the bits of the Pico SDK the video card uses. With <code>TERMINA_MEM_SCALE=2</code>, the Lua memory limits are doubled, since a Lua object takes about twice as much room on a 64-bit PC.</li>
           </ul>
         </article>
@@ -698,9 +701,9 @@ end</pre>
             <tr><td><code>net</code></td><td><code>request{url, method, headers, body | bodyfile, sink | file, progress}</code> → HTTP code, type (or <code>nil</code>, message). Streaming HTTP(S), <code>sink(chunk)</code> receives the response, <code>progress(received, total)</code> follows it every 200 ms; <code>connect(host, port [, ms])</code> → TCP socket with <code>send</code>, non-blocking <code>recv</code>, <code>close</code></td></tr>
             <tr><td><code>io</code></td><td>Standard input and output (terminal, pipe or file): <code>read([fmt])</code> with <code>"l"</code>, <code>"L"</code>, <code>"a"</code>, <code>"n"</code>; <code>lines()</code>; <code>write(...)</code>, <code>io.stdout:write</code>, <code>io.stderr:write</code></td></tr>
             <tr><td><code>os</code></td><td><code>getpid()</code>, <code>getenv(name)</code>, <code>setenv(name, value)</code>, <code>environ()</code>, <code>exit([code])</code>, <code>spawn(command line)</code> → pid, <code>wait([pid])</code> → pid, exit code, <code>kill(pid [, signal])</code></td></tr>
-            <tr><td><code>sys</code></td><td><code>millis()</code>, <code>micros()</code>, <code>sleep(ms)</code>, <code>yield()</code>, <code>random([n])</code>, <code>mem()</code>, <code>time()</code>, <code>epoch()</code>, <code>clipboard()</code>, <code>setclipboard(text)</code>, <code>version()</code> (firmware and video card versions), <code>log(text)</code> (a line on the serial port)</td></tr>
+            <tr><td><code>sys</code></td><td><code>millis()</code>, <code>micros()</code>, <code>sleep(ms)</code>, <code>yield()</code>, <code>random([n])</code>, <code>mem()</code>, <code>time()</code>, <code>epoch()</code>, <code>clipboard()</code>, <code>setclipboard(text)</code>, <code>version()</code> (firmware and video card versions), <code>log(text)</code> (a line on the serial port), <code>load()</code> (load of each core in %, over the last second)</td></tr>
             <tr><td><code>store</code></td><td><code>get(key [, default])</code>, <code>set(key, value)</code>: numbers or strings kept in NVS, keys of 15 characters at most</td></tr>
-            <tr><td><code>iso</code></td><td>Isometric world drawn by the video card: <code>open()</code>, <code>close()</code>, <code>load(art [, at])</code> (colors and up to 128 sprites, raw or run-length, in a 48 KB store), <code>info()</code> (the store's layout and what the card can do), <code>color(i, rgb)</code>, <code>map(w, h, tiles)</code>, <code>tile(x, y, ground, object)</code>, <code>frame{x, y, status, people, tile, see}</code> (up to 64 people; <code>tile</code>: ground diamonds 16 or 32 dots high; <code>see</code>: a circle where objects in front of the player let it show through). Only the camera and the people travel each frame, plus the bytes of the store that changed; the Pico draws what changed, scrolls the picture when the camera moves, and applies new colors without redrawing. <code>stats([reset])</code>: the card's drawing counters (pictures, strips, drawing time, latency, late lines).</td></tr>
+            <tr><td><code>iso</code></td><td>Isometric world drawn by the video card: <code>open()</code>, <code>close()</code>, <code>load(art [, at])</code> (colors and up to 128 sprites, raw or run-length, in a 48 KB store), <code>info()</code> (the store's layout and what the card can do), <code>color(i, rgb)</code>, <code>map(w, h, tiles)</code>, <code>tile(x, y, ground, object)</code>, <code>frame{x, y, status, people, tile, see}</code> (up to 64 people; <code>tile</code>: ground diamonds 16 or 32 dots high; <code>see</code>: a circle where objects in front of the player let it show through). Only the camera and the people travel each frame, plus the bytes of the store that changed; the Pico draws what changed, scrolls the picture when the camera moves, and applies new colors without redrawing. <code>stats([reset])</code>: the card's drawing counters (pictures, strips, drawing time, latency, late lines, and from V10 the busy time of its two cores and its free memory).</td></tr>
             <tr><td><code>zlib</code> <code>sha1</code> <code>gitc</code></td><td>Building blocks of the Git client (details in <code>firmware/src/lua/libgit.h</code>)</td></tr>
           </table></div>
           <p>A Lua program is a good pipeline citizen:</p>
