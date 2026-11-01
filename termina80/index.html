@@ -508,11 +508,13 @@ A&gt;git clone https://github.com/rxi/json.lua &amp;
             <tr><td>IO11</td><td>GP3</td><td>MOSI</td></tr>
             <tr><td>IO10</td><td>GP1</td><td>CS</td></tr>
             <tr><td>IO13</td><td>GP4</td><td>READY</td></tr>
+            <tr><td>IO9</td><td>GP5</td><td>MISO (the Pico's version)</td></tr>
             <tr><td>GND</td><td>GND</td><td></td></tr>
           </table></div>
 <pre>pio run -d video -t upload
 pio run -d firmware -t upload -t monitor</pre>
-          <div class="callout info">Hold BOOTSEL while plugging the Pico in to flash it the first time. On its own, it shows a test pattern reading <code>TERMINA VIDEO 640x480 V5</code>: swapped colors mean two swapped data pairs, no image usually means a reversed pair or a missing resistor. Every second, the Pico prints its slowest line and the late lines on its USB serial port; the second number must stay at 0.</div>
+          <div class="callout info">Hold BOOTSEL while plugging the Pico in to flash it the first time. On its own, it shows a test pattern reading <code>TERMINA VIDEO 640x480 V7</code>: swapped colors mean two swapped data pairs, no image usually means a reversed pair or a missing resistor. Every second, the Pico prints its slowest line and the late lines on its USB serial port; the second number must stay at 0.</div>
+          <div class="callout info">Flash both boards after an update. <code>ver</code> and <code>sysinfo</code> show the video card's version next to the firmware's, read over the MISO wire: <code>Video card 1.2.0, protocol V7</code> when both match, and <code>flash video/</code> when they differ or when the card does not answer on MISO (no wire, or a card older than V7).</div>
         </article>
 
         <!-- Firmware -->
