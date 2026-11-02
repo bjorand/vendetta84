@@ -593,6 +593,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>echo [-n] text</code></td><td>Print text (<code>&gt; f</code> writes a file, <code>&gt;&gt; f</code> appends)</td></tr>
             <tr><td><code>grep [-ivnc] text [f...]</code> <code>wc [-lwc]</code> <code>head [-n N]</code> <code>tail [-n N]</code> <code>tee [-a] f</code></td><td>Text tools: they read their files or their input (<code>ls | grep lua</code>)</td></tr>
             <tr><td><code>sort [-rnuf]</code> <code>uniq [-cd]</code> <code>diff a b</code></td><td>Sorted lines (reversed, by number, once each, any case), repeated lines once (with their count), changed lines</td></tr>
+            <tr><td><code>seq [-w] [-s sep] [first [incr]] last</code></td><td>Numbers from first to last, decimals allowed (<code>for i in $(seq 10)</code>, <code>seq 0 0.5 2</code>); <code>-w</code> pads with zeros, <code>-s</code> sets the separator</td></tr>
             <tr><td><code>ps</code> <code>jobs</code> <code>fg</code> <code>bg</code> <code>kill [-SIG] %job|pid</code> <code>wait</code> <code>sleep s</code></td><td>Processes and jobs</td></tr>
             <tr><td><code>export NAME=value</code> <code>unset NAME</code> <code>env</code></td><td>Variables, inherited by the programs started afterwards</td></tr>
             <tr><td><code>alias name='cmd args'</code> <code>unalias name</code> <code>history [-c]</code></td><td>Aliases and command history</td></tr>
