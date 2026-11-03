@@ -716,7 +716,7 @@ while true do
   term.cell(sys.random(term.cols()) - 1, sys.random(term.rows() - 1), "*", 14)
   sys.sleep(30)   -- yields: the screen refreshes
 end</pre>
-          <p>It is standard Lua 5.4, with 32-bit numbers and the <code>string</code>, <code>table</code>, <code>math</code>, <code>utf8</code> and <code>coroutine</code> libraries. <code>io</code> and <code>os</code> are TERMINA's own: standard input and output, environment and processes. A script gets at most 1 MB of memory, taken from PSRAM. If it goes over, it stops with "Out of memory" and the rest of the machine keeps running. Coordinates start at 0, row 0 is the status bar and an attribute is <code>background * 16 + foreground</code>.</p>
+          <p>It is standard Lua 5.4, with 32-bit numbers and the <code>string</code>, <code>table</code>, <code>math</code>, <code>utf8</code>, <code>coroutine</code> and <code>debug</code> libraries. <code>debug.sethook</code> keeps the system's own hook running (Ctrl+C, multitasking), and there is no <code>debug.debug()</code>. <code>io</code> and <code>os</code> are TERMINA's own: standard input and output, environment and processes. A script gets at most 1 MB of memory, taken from PSRAM. If it goes over, it stops with "Out of memory" and the rest of the machine keeps running. Coordinates start at 0, row 0 is the status bar and an attribute is <code>background * 16 + foreground</code>.</p>
           <div class="table-wrap"><table>
             <tr><th>Module</th><th>Functions</th></tr>
             <tr><td>global</td><td><code>print(...)</code>, <code>write(...)</code>, <code>require "mod"</code> (loads <code>mod.lua</code>), the <code>arg</code> table (<code>arg[0]</code> is the script)</td></tr>
