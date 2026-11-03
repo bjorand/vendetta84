@@ -607,7 +607,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>sort [-rnuf]</code> <code>uniq [-cd]</code> <code>diff a b</code></td><td>Sorted lines (reversed, by number, once each, any case), repeated lines once (with their count), changed lines</td></tr>
             <tr><td><code>seq [-w] [-s sep] [first [incr]] last</code></td><td>Numbers from first to last, decimals allowed (<code>for i in $(seq 10)</code>, <code>seq 0 0.5 2</code>); <code>-w</code> pads with zeros, <code>-s</code> sets the separator</td></tr>
             <tr><td><code>ps</code> <code>jobs</code> <code>fg</code> <code>bg</code> <code>kill [-SIG] %job|pid</code> <code>wait</code> <code>sleep s</code></td><td>Processes and jobs</td></tr>
-            <tr><td><code>export NAME=value</code> <code>unset NAME</code> <code>env</code></td><td>Variables, inherited by the programs started afterwards</td></tr>
+            <tr><td><code>export NAME=value</code> <code>unset NAME</code> <code>env</code></td><td>Variables, inherited by the programs started afterwards. <code>PATH</code> lists the directories where a command <code>name</code> is looked for, as <code>name.lua</code> or <code>name.sh</code>, after the built-in commands and programs: <code>.:/:/.pkg/bin</code> by default; <code>export PATH=$PATH:/bin</code> adds <code>/bin</code></td></tr>
             <tr><td><code>alias name='cmd args'</code> <code>unalias name</code> <code>history [-c]</code></td><td>Aliases and command history</td></tr>
             <tr><td><code>edit f</code></td><td>nano-style editor with Lua and shell highlighting, files up to 256 KB: <kbd>^S</kbd> save, <kbd>^X</kbd> exit · <kbd>Shift</kbd>+arrows select, <kbd>Alt</kbd>+<kbd>A</kbd> all · <kbd>^K</kbd> cut, <kbd>Alt</kbd>+<kbd>C</kbd> copy, <kbd>^U</kbd> paste (the selection, or the whole line) · <kbd>^W</kbd> search, <kbd>F3</kbd> next, <kbd>^R</kbd> replace · <kbd>^Z</kbd> undo, <kbd>^Y</kbd> redo · <kbd>^G</kbd> go to a line</td></tr>
             <tr><td><code>theme green|amber|white|cga</code> <code>scan on|off</code> <code>mode 106|80</code></td><td>Display (settings remembered)</td></tr>
@@ -676,7 +676,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
         <!-- Scripts -->
         <article class="chapter" id="scripts">
           <h3>Shell scripts</h3>
-          <p>The shell understands a small sh/bash language, at the prompt as in files. A <code>name.sh</code> file in the current directory or in <code>/</code> runs as the command <code>name</code>, in its own process: it can be piped, put in the background and interrupted like any command. <code>source name.sh</code> (or <code>. name.sh</code>) runs it inside the shell instead, keeping its variables, functions and directory. An unfinished command at the prompt goes on on the next line after a <code>&gt; </code>.</p>
+          <p>The shell understands a small sh/bash language, at the prompt as in files. A <code>name.sh</code> file in a directory of <code>PATH</code> runs as the command <code>name</code>, in its own process: it can be piped, put in the background and interrupted like any command. <code>source name.sh</code> (or <code>. name.sh</code>) runs it inside the shell instead, keeping its variables, functions and directory. An unfinished command at the prompt goes on on the next line after a <code>&gt; </code>.</p>
 <pre class="amber"># count.sh: counts the lines of the files given
 total=0
 for f in "$@"; do
