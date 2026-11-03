@@ -488,7 +488,7 @@ notes.txt: 12
             <tr><td>MISO</td><td>IO16</td></tr>
             <tr><td>CS</td><td>IO17</td></tr>
           </table></div>
-          <p>Format the card FAT32 (or FAT16); exFAT is not supported. It is mounted at boot when present: the boot screen and <code>dmesg</code> show it. The module has no card-detect pin, so after inserting a card later type <code>mount sd</code>, and type <code>umount sd</code> before pulling it out. <code>cp</code> and <code>mv</code> move files between the flash and the card (<code>mv</code> copies then deletes), and the web file manager, Lua, <code>git</code> and <code>pkg</code> see <code>/mnt/sd</code> like any other directory. The pins are set in <code>firmware/src/sdcard.cpp</code>.</p>
+          <p>Format the card FAT32 (or FAT16); exFAT is not supported. It is mounted at boot when present: the boot screen and <code>dmesg</code> show it. The module has no card-detect pin, so after inserting a card later type <code>mount sd</code>, and type <code>umount sd</code> before pulling it out. <code>cp</code> and <code>mv</code> move files between the flash and the card (<code>mv</code> copies then deletes), and the web file manager, Lua, <code>git</code> and <code>pkg</code> see <code>/mnt/sd</code> like any other directory. The <code>sd</code> line of <code>/etc/termina.conf</code> picks what happens at boot: <code>sd = auto</code> (the default) mounts the card, <code>sd = noauto</code> leaves it for <code>mount sd</code>, and <code>sd = off</code> turns the reader off, so that <code>mount sd</code> refuses (<code>mount</code> rereads the file, no restart needed). The pins are set in <code>firmware/src/sdcard.cpp</code>.</p>
         </article>
 
         <!-- HDMI -->
