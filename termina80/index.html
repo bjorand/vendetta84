@@ -411,7 +411,7 @@ notes.txt: 12
     <dl class="specs">
       <dt>Processor</dt><dd><b>ESP32-S3</b> at 240 MHz, dual core, on an ESP32-S3-DevKitC-1 N16R8: 16 MB flash, 8 MB PSRAM.</dd>
       <dt>Display</dt><dd>Any HDMI screen, <b>640×480 at 60 Hz</b> DVI from a Raspberry Pi Pico 2W video card. 106×40 text with the 6×8 font, or 80×30 with the 8×16 VGA font.</dd>
-      <dt>Storage</dt><dd><b>11.9 MB</b> LittleFS filesystem.</dd>
+      <dt>Storage</dt><dd><b>11.9 MB</b> LittleFS filesystem, plus an optional <b>microSD</b> card on <code>/mnt/sd</code>.</dd>
       <dt>Software</dt><dd><b>Lua 5.4</b> with 32-bit numbers, 1 MB per program. Up to <b>12 processes</b> with pipes, signals and job control.</dd>
       <dt>Sound</dt><dd>Passive buzzer, RTTTL melodies. Disk and network LEDs, and an optional OLED status screen.</dd>
       <dt>Input</dt><dd>Keyboard and mouse from the PC over <b>TCP 2323</b>, 8-byte frames, mDNS discovery <code>_termina._tcp</code>. Optional USB boot-protocol mouse.</dd>
@@ -470,13 +470,25 @@ notes.txt: 12
         <!-- Wiring -->
         <article class="chapter" id="wiring">
           <h3>Wiring</h3>
-          <p>The screen is any HDMI display, driven by the Pico 2W video card (next chapter). The rest of the machine is a buzzer, two LEDs and an optional status screen. All of these pins sit on the left header (J1) of the DevKitC-1. Do not use GPIO 26 to 37 (flash and octal PSRAM), 19/20 (native USB) or 43/44 (serial port).</p>
+          <p>The screen is any HDMI display, driven by the Pico 2W video card (next chapter). The rest of the machine is a buzzer, two LEDs, an optional status screen and an optional microSD card reader. All of these pins sit on the left header (J1) of the DevKitC-1. Do not use GPIO 26 to 37 (flash and octal PSRAM), 19/20 (native USB) or 43/44 (serial port).</p>
           <h4>Sound</h4>
           <p>You need a <strong>passive buzzer</strong>: + terminal on IO7, − terminal on GND. A power-hungry magnetic buzzer goes behind an NPN transistor (base tied to IO7 through 1 kΩ, with a diode across the buzzer). The pin is set in <code>firmware/src/sound.cpp</code>.</p>
           <h4>The LEDs</h4>
-          <p>The disk LED is on IO5 and the network LED on IO6. Each access lights them for at least 40 ms so you have time to see it.</p>
+          <p>The disk LED is on IO5 and the network LED on IO6. Each access lights them for at least 40 ms so you have time to see it. The disk LED shows the flash only, not the SD card.</p>
           <h4>The status screen</h4>
           <p>An optional <strong>0.96" SSD1306 128×64 I2C OLED</strong> (address 0x3C) shows how busy the machine is: SDA on IO8, SCL on IO18, VCC on 3V3, GND on GND. Once a second it draws the load of the ESP32's two cores, its free heap and PSRAM, then the load of the video card's two cores and its free memory (card V10 or later), and the frame rate of the isometric world while one is running. Without it, the console starts as usual. The same CPU figures are in <code>sysinfo</code> and in Lua's <code>sys.load()</code>.</p>
+          <h4>The SD card</h4>
+          <p>An optional <strong>microSD card reader</strong> (an HW-125 module, or any SPI microSD module) adds gigabytes on <code>/mnt/sd</code>. It has an SPI bus of its own, apart from the video card's. Power the HW-125 from <strong>5V</strong>: it carries its own 3.3 V regulator and level shifter, and is unreliable on 3V3.</p>
+          <div class="table-wrap"><table>
+            <tr><th>HW-125</th><th>ESP32-S3</th></tr>
+            <tr><td>VCC</td><td>5V</td></tr>
+            <tr><td>GND</td><td>GND</td></tr>
+            <tr><td>SCK</td><td>IO14</td></tr>
+            <tr><td>MOSI</td><td>IO15</td></tr>
+            <tr><td>MISO</td><td>IO16</td></tr>
+            <tr><td>CS</td><td>IO17</td></tr>
+          </table></div>
+          <p>Format the card FAT32 (or FAT16); exFAT is not supported. It is mounted at boot when present: the boot screen and <code>dmesg</code> show it. The module has no card-detect pin, so after inserting a card later type <code>mount sd</code>, and type <code>umount sd</code> before pulling it out. <code>cp</code> and <code>mv</code> move files between the flash and the card (<code>mv</code> copies then deletes), and the web file manager, Lua, <code>git</code> and <code>pkg</code> see <code>/mnt/sd</code> like any other directory. The pins are set in <code>firmware/src/sdcard.cpp</code>.</p>
         </article>
 
         <!-- HDMI -->
@@ -601,6 +613,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>theme green|amber|white|cga</code> <code>scan on|off</code> <code>mode 106|80</code></td><td>Display (settings remembered)</td></tr>
             <tr><td><code>saver [none|stars|mystify] [minutes]</code></td><td>Screen saver after that long without a key or the mouse, in the terminal as in WIN (the key that wakes it is not typed)</td></tr>
             <tr><td><code>mem</code> <code>df</code> <code>uptime</code> <code>date</code> <code>ver</code> <code>sysinfo</code> <code>wifi</code></td><td>System information</td></tr>
+            <tr><td><code>mount [sd]</code> <code>umount sd</code></td><td>List the filesystems, mount or unmount the microSD card on <code>/mnt/sd</code> (see <a href="#wiring">Wiring</a>); <code>umount</code> refuses while a process works in it</td></tr>
             <tr><td><code>dmesg [-T] [-c]</code></td><td>Kernel log: why the machine last restarted, the video card dropping out and coming back, Wi-Fi, clock sync, PC link. Kept in memory only; <code>-T</code> shows the time of day, <code>-c</code> clears it</td></tr>
             <tr><td><code>ntpdate</code></td><td>Sync the clock with the NTP servers now, rereading the time zone and servers from <code>/etc/termina.conf</code> (no restart needed after editing them)</td></tr>
             <tr><td><code>sound on|off</code> <code>beep [Hz] [ms]</code></td><td>Sound. The BEL character (<kbd>^G</kbd>) beeps too</td></tr>
@@ -711,7 +724,7 @@ end</pre>
             <tr><td><code>key</code></td><td><code>poll()</code> (event or <code>nil</code>), <code>wait()</code>, <code>held(name)</code>: whether a key is down now, for games. Events: <code>{type="char", ch="é"}</code>, <code>{type="key", key="up", ctrl, shift, alt}</code>, <code>{type="mouse", button, down}</code>, <code>{type="wheel", n}</code></td></tr>
             <tr><td><code>mouse</code></td><td><code>pos()</code> → x, y in pixels; <code>down([button])</code>; <code>show(b)</code></td></tr>
             <tr><td><code>sound</code></td><td><code>tone(hz [, ms])</code>, <code>play(rtttl)</code>, <code>stop()</code>, <code>busy()</code>, <code>tune(name)</code></td></tr>
-            <tr><td><code>fs</code></td><td><code>read</code>, <code>write</code>, <code>append</code>, <code>exists</code>, <code>remove</code>, <code>size</code>, <code>list</code>, <code>rename</code>, <code>info()</code>; directories: <code>mkdir</code>, <code>rmdir</code>, <code>isdir</code>, <code>dir([d])</code>, <code>rmtree</code>, <code>cwd()</code>; <code>open(f [, mode])</code> → <code>read(n|"a")</code>, <code>write(s)</code>, <code>seek([pos])</code>, <code>size()</code>, <code>close()</code></td></tr>
+            <tr><td><code>fs</code></td><td><code>read</code>, <code>write</code>, <code>append</code>, <code>exists</code>, <code>remove</code>, <code>size</code>, <code>list</code>, <code>rename</code> (not between the flash and <code>/mnt/sd</code>), <code>info([path])</code> (total and used bytes of the filesystem holding <code>path</code>, <code>/</code> by default; floats from 2 GB up); directories: <code>mkdir</code>, <code>rmdir</code>, <code>isdir</code>, <code>dir([d])</code>, <code>rmtree</code>, <code>cwd()</code>; <code>open(f [, mode])</code> → <code>read(n|"a")</code>, <code>write(s)</code>, <code>seek([pos])</code>, <code>size()</code>, <code>close()</code></td></tr>
             <tr><td><code>net</code></td><td><code>request{url, method, headers, body | bodyfile, sink | file, progress}</code> → HTTP code, type (or <code>nil</code>, message). Streaming HTTP(S), <code>sink(chunk)</code> receives the response, <code>progress(received, total)</code> follows it every 200 ms; <code>connect(host, port [, ms])</code> → TCP socket with <code>send</code>, non-blocking <code>recv</code>, <code>close</code></td></tr>
             <tr><td><code>io</code></td><td>Standard input and output (terminal, pipe or file): <code>read([fmt])</code> with <code>"l"</code>, <code>"L"</code>, <code>"a"</code>, <code>"n"</code>; <code>lines()</code>; <code>write(...)</code>, <code>io.stdout:write</code>, <code>io.stderr:write</code></td></tr>
             <tr><td><code>os</code></td><td><code>getpid()</code>, <code>getenv(name)</code>, <code>setenv(name, value)</code>, <code>environ()</code>, <code>exit([code])</code>, <code>spawn(command line)</code> → pid, <code>wait([pid])</code> → pid, exit code, <code>kill(pid [, signal])</code></td></tr>
