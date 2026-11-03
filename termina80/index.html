@@ -282,18 +282,18 @@ footer b span { color: var(--phos); }
       <a class="more" href="#features">Explore the features ›</a>
     </div>
     <div class="crt" aria-label="A TERMINA shell session">
-      <div class="screen"><span class="dim">TERMINA DOS 1.0 · 8192 KB PSRAM · termina.local</span>
+      <div class="screen"><span class="dim">TERMINA OS 2.0 · 8192 KB PSRAM · termina.local</span>
 
-A&gt;ls | grep lua
+/$ ls | grep lua
 hello.lua
 snake.lua
-A&gt;count.sh readme.txt notes.txt
+/$ count.sh readme.txt notes.txt
 readme.txt: 4
 notes.txt: 12
 <span class="amb">total: 16</span>
-A&gt;git pull &gt; pull.log 2&gt;&amp;1 &amp;
+/$ git pull &gt; pull.log 2&gt;&amp;1 &amp;
 [1] 7
-A&gt;<span class="cursor">&nbsp;</span></div>
+/$ <span class="cursor">&nbsp;</span></div>
     </div>
   </div>
 </header>
@@ -303,7 +303,7 @@ A&gt;<span class="cursor">&nbsp;</span></div>
     <div class="stat"><b>240<small>MHz</small></b><span>ESP32-S3 · dual core · 8 MB PSRAM</span></div>
     <div class="stat"><b>106×40</b><span>Text, or 80×30 with the VGA font</span></div>
     <div class="stat"><b>640×480</b><span>HDMI at 60 Hz via a Pico 2W</span></div>
-    <div class="stat"><b>11.9<small>MB</small></b><span>A: drive on LittleFS</span></div>
+    <div class="stat"><b>11.9<small>MB</small></b><span>LittleFS filesystem</span></div>
   </div>
 </div>
 
@@ -312,16 +312,16 @@ A&gt;<span class="cursor">&nbsp;</span></div>
     <div class="head">
       <div class="eyebrow">Features</div>
       <h2>Small machine. <em>Serious system.</em></h2>
-      <p>Everything a home computer had, and a few things it never dared to. From the <code>A&gt;</code> prompt all the way to the windowed desktop.</p>
+      <p>Everything a home computer had, and a few things it never dared to. From the shell prompt all the way to the windowed desktop.</p>
     </div>
     <div class="bento">
       <div class="cell wide glow">
         <div class="tag">Shell</div>
         <h3>Real processes, pipes and jobs.</h3>
         <p>Every command runs in its own process. Pipe them, redirect them, send them to the background, stop them with <kbd>Ctrl</kbd>+<kbd>Z</kbd>. History, Tab completion, quoting and <code>$VARIABLES</code> included.</p>
-<pre>A&gt;cat log.txt | grep -i error | wc -l
+<pre>/$ cat log.txt | grep -i error | wc -l
 3
-A&gt;git clone https://github.com/rxi/json.lua &amp;
+/$ git clone https://github.com/rxi/json.lua &amp;
 [1] 5</pre>
       </div>
       <div class="cell">
@@ -364,7 +364,7 @@ A&gt;git clone https://github.com/rxi/json.lua &amp;
       <div class="cell">
         <div class="tag">Online</div>
         <h3>Out on the network.</h3>
-        <p>A text-mode web browser with DuckDuckGo search, an ANSI <code>telnet</code>, and <code>share on</code> to drop files on <code>A:</code> from any browser.</p>
+        <p>A text-mode web browser with DuckDuckGo search, an ANSI <code>telnet</code>, and <code>share on</code> to drop files on the machine from any browser.</p>
       </div>
       <div class="cell">
         <div class="tag">Editor</div>
@@ -411,7 +411,7 @@ A&gt;git clone https://github.com/rxi/json.lua &amp;
     <dl class="specs">
       <dt>Processor</dt><dd><b>ESP32-S3</b> at 240 MHz, dual core, on an ESP32-S3-DevKitC-1 N16R8: 16 MB flash, 8 MB PSRAM.</dd>
       <dt>Display</dt><dd>Any HDMI screen, <b>640×480 at 60 Hz</b> DVI from a Raspberry Pi Pico 2W video card. 106×40 text with the 6×8 font, or 80×30 with the 8×16 VGA font.</dd>
-      <dt>Storage</dt><dd><b>11.9 MB</b> <code>A:</code> drive on LittleFS.</dd>
+      <dt>Storage</dt><dd><b>11.9 MB</b> LittleFS filesystem.</dd>
       <dt>Software</dt><dd><b>Lua 5.4</b> with 32-bit numbers, 1 MB per program. Up to <b>12 processes</b> with pipes, signals and job control.</dd>
       <dt>Sound</dt><dd>Passive buzzer, RTTTL melodies. Disk and network LEDs, and an optional OLED status screen.</dd>
       <dt>Input</dt><dd>Keyboard and mouse from the PC over <b>TCP 2323</b>, 8-byte frames, mDNS discovery <code>_termina._tcp</code>. Optional USB boot-protocol mouse.</dd>
@@ -529,9 +529,9 @@ pio run -d firmware -t upload -t monitor</pre>
             <li>Copy <code>firmware/include/secrets.example.h</code> to <code>secrets.h</code> and put your network in it.</li>
             <li>You can also configure nothing. TERMINA then opens a <code>TERMINA-XXXX</code> access point (password <code>termina80</code>, IP <code>192.168.4.1</code>). Once the PC is connected, type:</li>
           </ul>
-<pre>A&gt;wifi "MyNetwork" password</pre>
+<pre>/$ wifi "MyNetwork" password</pre>
           <p>The network is saved in NVS and the machine reboots onto it. Until Wi-Fi is up, the serial monitor (115200 baud) works as a keyboard.</p>
-          <div class="callout">Plug the USB cable into the port marked <strong>UART</strong>. The partition table is <code>firmware/partitions.csv</code>: 4 MB for the program, 11.9 MB for <code>A:</code>. A freshly flashed board formats <code>A:</code> on first boot.</div>
+          <div class="callout">Plug the USB cable into the port marked <strong>UART</strong>. The partition table is <code>firmware/partitions.csv</code>: 4 MB for the program, 11.9 MB for the filesystem. A freshly flashed board formats it on first boot.</div>
         </article>
 
         <!-- Keyboard -->
@@ -556,11 +556,11 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
           <h3>Sharing files</h3>
           <p><code>share on</code> starts a small file manager on port 80 and <code>share off</code> stops it. From any browser on the same network, open <strong>http://termina.local/</strong> (or the address <code>share on</code> prints).</p>
           <ul>
-            <li>Browse <code>A:</code>, download, rename and delete files and folders, create folders.</li>
+            <li>Browse the filesystem, download, rename and delete files and folders, create folders.</li>
             <li>Drop files or whole folders on the page to upload them. A file is written as <code>name.part</code> and only replaces the old version once complete.</li>
             <li>The machine keeps running during a transfer: the server has its own task on core 0.</li>
           </ul>
-          <div class="callout">There is no password: while sharing is on, anyone on the network can read and write <code>A:</code>. It is off at boot.</div>
+          <div class="callout">There is no password: while sharing is on, anyone on the network can read and write every file. It is off at boot.</div>
         </article>
 
         <!-- Emulator -->
@@ -571,7 +571,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
 <pre>go generate ./internal/emu &amp;&amp; PATH=/c/msys64/mingw64/bin:$PATH CGO_ENABLED=1 go run ./cmd/termina-emu</pre>
           <div class="callout info">Run <code>go generate</code> before each build that follows a firmware change. The Go cache does not see the C++ sources included from <code>firmware/</code>, so the generator writes their fingerprint into <code>internal/emu/fw_*.cpp</code>. It also produces the built-in Lua programs.</div>
           <ul>
-            <li>The <code>A:</code> drive is the <code>%AppData%\termina\A</code> directory (<code>-disk</code> option). NVS settings are stored next to it, in <code>nvs.txt</code>.</li>
+            <li>The filesystem is the <code>%AppData%\termina\A</code> directory (<code>-disk</code> option). NVS settings are stored next to it, in <code>nvs.txt</code>.</li>
             <li>The mouse follows the PC pointer, without capture. <code>-scale 1</code> makes the window 640×480 (the default is twice that) and <code>-mute</code> turns the sound off.</li>
             <li><code>-type</code> types text after startup and <code>-shot f.png</code> saves the screen then quits. In <code>-type</code>: <code>\n</code> Enter, <code>\e</code> Esc, <code>\s</code> Ctrl+Esc, <code>\c</code> Ctrl+C, <code>\z</code> Ctrl+Z, <code>\u</code>/<code>\d</code> arrows, <code>\p</code> a one-second pause.</li>
             <li>Wi-Fi is simulated and always connected. The browser goes through Go's network stack, which verifies TLS certificates. <code>ping</code> times a TCP connection to port 80 or 443.</li>
@@ -589,7 +589,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>ls [-la] [names]</code> <code>cat [f...]</code> <code>cp [-r] a... b</code> <code>mv a... b</code> <code>rm f</code> <code>touch f</code></td><td>Files: <code>-l</code> adds dates, <code>-a</code> shows hidden names; with several names or a directory as the last one, <code>cp</code> and <code>mv</code> put them in it</td></tr>
             <tr><td><code>less [f]</code></td><td>Full-screen viewer, also of a pipe (<code>find | less</code>): <kbd>Space</kbd>/<kbd>b</kbd> pages, <code>/</code> searches, <kbd>n</kbd> next, <kbd>q</kbd> quits</td></tr>
             <tr><td><code>find [dir] [-name pattern] [-type f|d]</code> <code>du [-s] [names]</code></td><td>Names below a directory (<code>find . -name "*.lua"</code>), space used</td></tr>
-            <tr><td><code>cd [dir]</code> <code>pwd</code> <code>mkdir d</code> <code>rmdir d</code> <code>rm -r d</code></td><td>Directories. <code>cd ..</code> goes up and the prompt becomes <code>A:\dir&gt;</code>; <code>pwd</code> prints the current directory</td></tr>
+            <tr><td><code>cd [dir]</code> <code>pwd</code> <code>mkdir d</code> <code>rmdir d</code> <code>rm -r d</code></td><td>Directories. <code>cd ..</code> goes up and the prompt becomes <code>/dir$</code>; <code>pwd</code> prints the current directory</td></tr>
             <tr><td><code>echo [-n] text</code></td><td>Print text (<code>&gt; f</code> writes a file, <code>&gt;&gt; f</code> appends)</td></tr>
             <tr><td><code>grep [-ivnc] text [f...]</code> <code>wc [-lwc]</code> <code>head [-n N]</code> <code>tail [-n N]</code> <code>tee [-a] f</code></td><td>Text tools: they read their files or their input (<code>ls | grep lua</code>)</td></tr>
             <tr><td><code>sort [-rnuf]</code> <code>uniq [-cd]</code> <code>diff a b</code></td><td>Sorted lines (reversed, by number, once each, any case), repeated lines once (with their count), changed lines</td></tr>
@@ -603,14 +603,14 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>mem</code> <code>df</code> <code>uptime</code> <code>date</code> <code>ver</code> <code>sysinfo</code> <code>wifi</code></td><td>System information</td></tr>
             <tr><td><code>dmesg [-T] [-c]</code></td><td>Kernel log: why the machine last restarted, the video card dropping out and coming back, Wi-Fi, clock sync, PC link. Kept in memory only; <code>-T</code> shows the time of day, <code>-c</code> clears it</td></tr>
             <tr><td><code>sound on|off</code> <code>beep [Hz] [ms]</code></td><td>Sound. The BEL character (<kbd>^G</kbd>) beeps too</td></tr>
-            <tr><td><code>play tune|file</code></td><td>Plays a built-in RTTTL melody (<code>play</code> alone lists them) or a file on <code>A:</code></td></tr>
+            <tr><td><code>play tune|file</code></td><td>Plays a built-in RTTTL melody (<code>play</code> alone lists them) or a file</td></tr>
             <tr><td><code>snake</code></td><td>Arrows or WASD/ZQSD, P to pause</td></tr>
             <tr><td><code>paint</code></td><td>Left click: draw · right: erase · middle: eyedropper · wheel: size · S: save · C: clear · Esc: quit</td></tr>
             <tr><td><code>web [search|address]</code></td><td>Browser: ↑/↓ and Enter in the results, N for the next page. In a page: Tab from link to link, Enter or click to follow, Backspace to go back, <code>/</code> to search, G to type an address</td></tr>
             <tr><td><code>telnet host [port]</code></td><td>ANSI telnet client (<code>telnet towel.blinkenlights.nl</code>), <kbd>Ctrl</kbd>+<kbd>C</kbd> to quit</td></tr>
             <tr><td><code>vbench [scene...]</code></td><td>Video benchmark: a terminal scroll, then isometric scenes drawn by the video card (<code>walk</code>, <code>crowd</code>, <code>scroll</code>, <code>night</code>, <code>palette</code>, <code>store</code>, and on a card V11 <code>libcrowd</code> and <code>libscroll</code>, drawn from the sprite library in its flash), with frames per second and drawing time; results in <code>/vbench.csv</code> and on the serial port</td></tr>
             <tr><td><code>share on|off</code></td><td>Web file manager on port 80</td></tr>
-            <tr><td><code>run script [args]</code> or <code>script [args]</code></td><td>Runs <code>script.lua</code> from <code>A:</code> (<kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts it)</td></tr>
+            <tr><td><code>run script [args]</code> or <code>script [args]</code></td><td>Runs <code>script.lua</code> (<kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts it)</td></tr>
             <tr><td><code>sh script [args]</code> or <code>script [args]</code>, <code>source script</code></td><td>Runs the shell script <code>script.sh</code></td></tr>
             <tr><td><code>git ...</code></td><td>Git client</td></tr>
             <tr><td><code>pkg ...</code></td><td>Package manager</td></tr>
@@ -623,13 +623,13 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
         <article class="chapter" id="shell">
           <h3>Processes and jobs</h3>
           <p>Each command runs in a process of its own, and several run at the same time.</p>
-<pre>A&gt;cat log.txt | grep -i error | wc -l
+<pre>/$ cat log.txt | grep -i error | wc -l
 3
-A&gt;git clone https://github.com/rxi/json.lua &gt; clone.log 2&gt;&amp;1 &amp;
+/$ git clone https://github.com/rxi/json.lua &gt; clone.log 2&gt;&amp;1 &amp;
 [1] 5
-A&gt;jobs
+/$ jobs
 [1]+  Running              git clone https://github.com/rxi/json.lua &gt; clone.log 2&gt;&amp;1
-A&gt;mkdir out &amp;&amp; echo "shell pid $$" &gt; out/info.txt</pre>
+/$ mkdir out &amp;&amp; echo "shell pid $$" &gt; out/info.txt</pre>
           <div class="table-wrap"><table>
             <tr><th>Syntax</th><th>Meaning</th></tr>
             <tr><td><code>a | b | c</code></td><td>Pipeline: each command's output feeds the next one</td></tr>
@@ -682,7 +682,7 @@ echo "total: $total"</pre>
         <!-- Lua -->
         <article class="chapter" id="lua">
           <h3>Programming in Lua</h3>
-          <p>Programs are <code>.lua</code> files on the <code>A:</code> drive. Type <code>edit game.lua</code> to write one, then <code>game</code> to run it. At boot, <code>hello.lua</code> and <code>snake.lua</code> are copied to <code>A:</code> if they are not there already. They are examples to read and modify.</p>
+          <p>Programs are <code>.lua</code> files. Type <code>edit game.lua</code> to write one, then <code>game</code> to run it. At boot, <code>hello.lua</code> and <code>snake.lua</code> are copied to <code>/</code> if they are not there already. They are examples to read and modify.</p>
 <pre class="amber">-- stars.lua
 term.cls()
 while true do
@@ -713,23 +713,23 @@ end</pre>
 for line in io.lines() do
   io.write(line:upper(), "\n")
 end</pre>
-          <div class="callout info">A game loop must call <code>sys.yield()</code>, <code>key.wait()</code> or <code>sys.sleep()</code> so that the screen refreshes. The programs in <code>firmware/lua/</code> are built into the firmware: they are updated with each flash and take no room on <code>A:</code>.</div>
+          <div class="callout info">A game loop must call <code>sys.yield()</code>, <code>key.wait()</code> or <code>sys.sleep()</code> so that the screen refreshes. The programs in <code>firmware/lua/</code> are built into the firmware: they are updated with each flash and take no room on the filesystem.</div>
         </article>
 
         <!-- Git -->
         <article class="chapter" id="git">
           <h3>Git</h3>
           <p><code>git</code> is a real Git client written in Lua. It speaks the smart HTTP(S) protocol of GitHub, GitLab or Gitea. The repository it creates is an ordinary Git repository, which the PC's <code>git</code> can read.</p>
-<pre>A&gt;git config user.name "Ada Lovelace"
-A&gt;git config user.email ada@example.org
-A&gt;git clone https://github.com/rxi/json.lua
-A&gt;cd json.lua
-A:\json.lua&gt;edit README.md
-A:\json.lua&gt;git add .
-A:\json.lua&gt;git commit -m "From TERMINA"
-A:\json.lua&gt;git config user.login mylogin
-A:\json.lua&gt;git config token ghp_xxxxxxxx
-A:\json.lua&gt;git push</pre>
+<pre>/$ git config user.name "Ada Lovelace"
+/$ git config user.email ada@example.org
+/$ git clone https://github.com/rxi/json.lua
+/$ cd json.lua
+/json.lua$ edit README.md
+/json.lua$ git add .
+/json.lua$ git commit -m "From TERMINA"
+/json.lua$ git config user.login mylogin
+/json.lua$ git config token ghp_xxxxxxxx
+/json.lua$ git push</pre>
           <p>Other commands: <code>status</code>, <code>diff [--cached]</code>, <code>log [-n N]</code>, <code>show [commit]</code>, <code>rm f</code>, <code>restore [--staged] f</code>, <code>branch [name]</code>, <code>switch branch</code>, <code>pull</code>. The name, email, login and token are kept in NVS and never in the repository. For GitHub, the token is a <em>personal access token</em> with write access to the repository.</p>
           <div class="callout">A few limitations: the clone is shallow (latest commit only) and objects are not compressed, so the repository takes about twice the size of the files. <code>pull</code> can only fast-forward: if both sides have different commits, it stops without merging. Committing requires network time (NTP).</div>
           <p>To develop the client on the PC, there is a test bench: <code>sh firmware/test/host/build.sh</code>, then <code>hostlua.exe --root /tmp/disk firmware/lua/git.lua clone &lt;url&gt;</code>.</p>
@@ -749,7 +749,7 @@ pkg remove [-f] &lt;name&gt; <span class="c">uninstall</span>
 pkg source            <span class="c">registries in use</span>
 pkg source add &lt;name&gt; &lt;url&gt;   <span class="c">add a registry</span>
 pkg url [address]     <span class="c">change the main registry</span></pre>
-          <p>Downloads show a progress bar with the bytes received and the throughput; when several packages are installed or upgraded, <code>pkg</code> lists them first and ends with the total size, time and speed. A package lands in <code>A:\pkg\&lt;name&gt;\</code>, each file checked against its SHA-1 sum. Its commands run at the prompt like other programs, <code>require "name.module"</code> finds its modules, and its <code>-- @app</code> files appear on the desktop. To publish one, see the registry's <code>CONTRIBUTING.md</code>. A project can also publish its own registry, added with <code>pkg source add</code>.</p>
+          <p>Downloads show a progress bar with the bytes received and the throughput; when several packages are installed or upgraded, <code>pkg</code> lists them first and ends with the total size, time and speed. A package lands in <code>/pkg/&lt;name&gt;/</code>, each file checked against its SHA-1 sum. Its commands run at the prompt like other programs, <code>require "name.module"</code> finds its modules, and its <code>-- @app</code> files appear on the desktop. To publish one, see the registry's <code>CONTRIBUTING.md</code>. A project can also publish its own registry, added with <code>pkg source add</code>.</p>
         </article>
 
         <!-- WIN -->
@@ -760,10 +760,10 @@ pkg url [address]     <span class="c">change the main registry</span></pre>
             <li>Shortcuts: <kbd>Alt</kbd>+<kbd>Tab</kbd>, <kbd>Alt</kbd>+<kbd>F4</kbd>, <kbd>Ctrl</kbd>+<kbd>Esc</kbd> for Start.</li>
             <li>Bundled applications: <strong>Files</strong>, <strong>Notepad</strong> (<kbd>Shift</kbd>+arrows select, <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>X</kbd>/<kbd>V</kbd> use the clipboard), <strong>Clock</strong>, <strong>Settings</strong> (theme, wallpaper, screen saver) and <strong>Terminal</strong>.</li>
             <li><strong>Terminal</strong> is a real text terminal in a window, with its own current directory: commands, Lua programs (<code>git</code>, <code>pkg</code>, your scripts), <code>telnet</code>, <code>edit</code>, <code>snake</code> and <code>sysinfo</code> run inside it, live, keyboard included, pipelines too. Closing the window sends HUP to its jobs. Only <code>paint</code> and <code>web</code> take over the screen then give the desktop back.</li>
-            <li>Start &gt; <em>Exit to DOS</em> returns to the prompt.</li>
+            <li>Start &gt; <em>Exit to shell</em> returns to the prompt.</li>
           </ul>
           <h4>Writing an application</h4>
-          <p>An application is a <code>.lua</code> file on <code>A:</code> whose header contains <code>-- @app Name</code>, and optionally <code>-- @icon name</code>. All applications run at the same time, each in its own coroutine. An application must yield through <code>win.event()</code> or <code>sys.sleep()</code>, otherwise it is stopped after 4 seconds. An error only closes the application at fault.</p>
+          <p>An application is a <code>.lua</code> file whose header contains <code>-- @app Name</code>, and optionally <code>-- @icon name</code>. All applications run at the same time, each in its own coroutine. An application must yield through <code>win.event()</code> or <code>sys.sleep()</code>, otherwise it is stopped after 4 seconds. An error only closes the application at fault.</p>
 <pre class="amber">-- @app Hello
 local f = win.open{title = "Hello", w = 160, h = 60}
 f:cls(15)
@@ -771,7 +771,7 @@ f:text(10, 20, "Hello!", 1, nil, "vga")
 while win.event().type ~= "close" do end</pre>
           <div class="table-wrap"><table>
             <tr><th>Object</th><th>Functions</th></tr>
-            <tr><td><code>win</code></td><td><code>open{title, w, h, x, y, resizable, bg}</code>, <code>event([ms])</code>, <code>timer(ms)</code>, <code>message</code>, <code>ask</code>, <code>input</code>, <code>run(file, ...)</code>, <code>apps()</code>, <code>rescan()</code>, <code>textsize</code>, <code>screen()</code>, <code>settings()</code>, <code>set</code>, <code>choices</code>, <code>dos(line [, dir])</code>, <code>quit()</code></td></tr>
+            <tr><td><code>win</code></td><td><code>open{title, w, h, x, y, resizable, bg}</code>, <code>event([ms])</code>, <code>timer(ms)</code>, <code>message</code>, <code>ask</code>, <code>input</code>, <code>run(file, ...)</code>, <code>apps()</code>, <code>rescan()</code>, <code>textsize</code>, <code>screen()</code>, <code>settings()</code>, <code>set</code>, <code>choices</code>, <code>shell(line [, dir])</code>, <code>quit()</code></td></tr>
             <tr><td>window <code>f</code></td><td><code>cls</code>, <code>pixel</code>, <code>get</code>, <code>line</code>, <code>rect</code>/<code>box</code>, <code>circle</code>, <code>bevel</code>, <code>text</code>, <code>icon</code>, <code>scroll</code>, <code>size</code>, <code>title</code>, <code>resize</code>, <code>focus</code>, <code>close</code>, <code>isopen</code></td></tr>
             <tr><td>events</td><td><code>mouse</code>, <code>drag</code>, <code>wheel</code>, <code>key</code>, <code>char</code>, <code>resize</code>, <code>close</code>, <code>timer</code>; the <code>win</code> field identifies the window</td></tr>
           </table></div>
