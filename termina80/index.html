@@ -645,6 +645,17 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
           <h4>At the prompt</h4>
           <p>A long line continues on the next rows. <kbd>↑</kbd>/<kbd>↓</kbd> go through the last 200 lines (<code>history</code> lists them), and <kbd>^R</kbd> searches them: type part of a command, <kbd>^R</kbd> again for an older one, <kbd>Enter</kbd> runs it. <kbd>Tab</kbd> completes names. <kbd>^U</kbd>, <kbd>^K</kbd> and <kbd>^W</kbd> cut to the start, to the end or the previous word into the clipboard, <kbd>^Y</kbd> pastes it, so text copied in <code>edit</code> or Notepad can be pasted here.</p>
           <p>Unquoted <code>*</code>, <code>?</code> and <code>[abc]</code> become the matching file names (<code>ls *.lua</code>, <code>rm old/*.txt</code>); quotes keep them as they are. <code>alias ll='ls -l'</code> gives a command a short name. If a <code>/.profile</code> script exists, the prompt runs it when it starts: the place for aliases and variables.</p>
+          <p>The prompt is the <code>PS1</code> variable (<code>\w\$ </code> when unset, which shows <code>/games$ </code>), and <code>PS2</code> the one for the next lines of an unfinished command (<code>&gt; </code>). As in bash, its escapes are replaced, then <code>$VAR</code>, <code>$(cmd)</code> and <code>$((...))</code> are expanded each time it is shown. For instance, in <code>/.profile</code>: <code>PS1='\e[32m\W\e[0m $? \$ '</code>. The desktop Terminal shows the same prompt.</p>
+          <div class="table-wrap"><table>
+            <tr><th>Escape</th><th>Shows</th></tr>
+            <tr><td><code>\w</code> <code>\W</code></td><td>The current directory, its last name</td></tr>
+            <tr><td><code>\u</code> <code>\h</code></td><td><code>$USER</code> (or <code>user</code>), <code>termina</code></td></tr>
+            <tr><td><code>\t</code> <code>\T</code> <code>\A</code> <code>\@</code></td><td>The time: 24-hour with seconds, 12-hour, HH:MM, am/pm</td></tr>
+            <tr><td><code>\d</code> <code>\D{fmt}</code></td><td>The date (<code>Tue Nov 03</code>), any <code>strftime</code> format</td></tr>
+            <tr><td><code>\j</code> <code>\!</code> <code>\#</code></td><td>Number of jobs, history number, command number</td></tr>
+            <tr><td><code>\s</code> <code>\v</code></td><td><code>sh</code>, the firmware version</td></tr>
+            <tr><td><code>\n</code> <code>\e</code> <code>\a</code> <code>\\</code> <code>\$</code> <code>\nnn</code></td><td>Newline, Esc (ANSI colors), bell, <code>\</code>, <code>$</code>, a character in octal</td></tr>
+          </table></div>
           <div class="callout info">Under the hood, each process is a FreeRTOS task with its own stack, but only one runs at a time: they take turns whenever the running one waits (keyboard, <code>sys.sleep</code>, a full pipe), or every 20 ms for a Lua program. The ESP32-S3 has no MMU, so separate Lua states keep programs apart. At most 12 processes run at once, each needing about 80 KB of internal RAM. Commands that change the shell (<code>cd</code>, <code>export</code>, <code>fg</code>…) or take over the screen cannot be piped or put in the background.</div>
         </article>
 
@@ -771,7 +782,7 @@ f:text(10, 20, "Hello!", 1, nil, "vga")
 while win.event().type ~= "close" do end</pre>
           <div class="table-wrap"><table>
             <tr><th>Object</th><th>Functions</th></tr>
-            <tr><td><code>win</code></td><td><code>open{title, w, h, x, y, resizable, bg}</code>, <code>event([ms])</code>, <code>timer(ms)</code>, <code>message</code>, <code>ask</code>, <code>input</code>, <code>run(file, ...)</code>, <code>apps()</code>, <code>rescan()</code>, <code>textsize</code>, <code>screen()</code>, <code>settings()</code>, <code>set</code>, <code>choices</code>, <code>shell(line [, dir])</code>, <code>quit()</code></td></tr>
+            <tr><td><code>win</code></td><td><code>open{title, w, h, x, y, resizable, bg}</code>, <code>event([ms])</code>, <code>timer(ms)</code>, <code>message</code>, <code>ask</code>, <code>input</code>, <code>run(file, ...)</code>, <code>apps()</code>, <code>rescan()</code>, <code>textsize</code>, <code>screen()</code>, <code>settings()</code>, <code>set</code>, <code>choices</code>, <code>shell(line [, dir])</code>, <code>prompt([dir])</code>, <code>quit()</code></td></tr>
             <tr><td>window <code>f</code></td><td><code>cls</code>, <code>pixel</code>, <code>get</code>, <code>line</code>, <code>rect</code>/<code>box</code>, <code>circle</code>, <code>bevel</code>, <code>text</code>, <code>icon</code>, <code>scroll</code>, <code>size</code>, <code>title</code>, <code>resize</code>, <code>focus</code>, <code>close</code>, <code>isopen</code></td></tr>
             <tr><td>events</td><td><code>mouse</code>, <code>drag</code>, <code>wheel</code>, <code>key</code>, <code>char</code>, <code>resize</code>, <code>close</code>, <code>timer</code>; the <code>win</code> field identifies the window</td></tr>
           </table></div>
