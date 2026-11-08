@@ -327,9 +327,9 @@ notes.txt: 12
       </div>
       <div class="cell">
         <div class="tag">Processes</div>
-        <h3>Up to twelve at once.</h3>
+        <h3>Up to forty at once.</h3>
         <p>Signals, environment, <code>ps</code>, <code>kill</code>, <code>fg</code>, <code>bg</code>.</p>
-        <div class="big">12</div>
+        <div class="big">40</div>
       </div>
       <div class="cell">
         <div class="tag">Scripting</div>
@@ -413,7 +413,7 @@ notes.txt: 12
       <dt>Processor</dt><dd><b>ESP32-S3</b> at 240 MHz, dual core, on an ESP32-S3-DevKitC-1 N16R8: 16 MB flash, 8 MB PSRAM.</dd>
       <dt>Display</dt><dd>Any HDMI screen, <b>640×480 at 60 Hz</b> DVI from a Raspberry Pi Pico 2W video card. 106×40 text with the 6×8 font, or 80×30 with the 8×16 VGA font.</dd>
       <dt>Storage</dt><dd><b>11.9 MB</b> LittleFS filesystem, plus an optional <b>microSD</b> card on <code>/mnt/sd</code>.</dd>
-      <dt>Software</dt><dd><b>Lua 5.4</b> with 32-bit numbers, 1 MB per program. Up to <b>12 processes</b> with pipes, signals and job control.</dd>
+      <dt>Software</dt><dd><b>Lua 5.4</b> with 32-bit numbers, 1 MB per program. Up to <b>40 processes</b> with pipes, signals and job control.</dd>
       <dt>Sound</dt><dd>Passive buzzer, RTTTL melodies. Disk and network LEDs, and an optional OLED status screen.</dd>
       <dt>Input</dt><dd>Keyboard and mouse from the PC over <b>TCP 2323</b>, 8-byte frames, mDNS discovery <code>_termina._tcp</code>. Optional USB boot-protocol mouse.</dd>
       <dt>Connections</dt><dd>
@@ -657,7 +657,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>NAME=value cmd</code></td><td>A variable for this command only</td></tr>
           </table></div>
           <p><kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts the foreground job and <kbd>Ctrl</kbd>+<kbd>Z</kbd> stops it. <code>fg %1</code> brings a job back, <code>bg %1</code> lets a stopped one go on behind, <code>kill %1</code> ends it (<code>kill -l</code> lists the signals). A background job that waits for a key stops until <code>fg</code>. Jobs keep running in TERMINA WIN, and a job started in a desktop Terminal ends (HUP) when its window closes.</p>
-          <p><code>ps</code> shows the processes: <code>R</code> running, <code>S</code> sleeping, <code>T</code> stopped, <code>+</code> has the keyboard.</p>
+          <p><code>ps</code> shows the processes: <code>R</code> running, <code>S</code> sleeping, <code>T</code> stopped; then <code>W</code> if its stack is in PSRAM and <code>+</code> if it has the keyboard. <code>mem</code> ends with a <code>Stacks:</code> line: how many 16 KB stack slots are in use, how many tasks share them and how many stacks are in PSRAM.</p>
           <h4>At the prompt</h4>
           <p>A long line continues on the next rows. <kbd>↑</kbd>/<kbd>↓</kbd> go through the last 200 lines (<code>history</code> lists them), and <kbd>^R</kbd> searches them: type part of a command, <kbd>^R</kbd> again for an older one, <kbd>Enter</kbd> runs it. <kbd>Tab</kbd> completes names. <kbd>^U</kbd>, <kbd>^K</kbd> and <kbd>^W</kbd> cut to the start, to the end or the previous word into the clipboard, <kbd>^Y</kbd> pastes it, so text copied in <code>edit</code> or Notepad can be pasted here. <kbd>Shift</kbd>+<kbd>PgUp</kbd>/<kbd>PgDn</kbd> and the mouse wheel scroll back through the last 1000 rows that left the top of the screen (the status bar shows how far); any other key returns to the bottom.</p>
           <p>Unquoted <code>*</code>, <code>?</code> and <code>[abc]</code> become the matching file names (<code>ls *.lua</code>, <code>rm old/*.txt</code>); quotes keep them as they are. <code>alias ll='ls -l'</code> gives a command a short name. If a <code>/.profile</code> script exists, the prompt runs it when it starts: the place for aliases and variables.</p>
@@ -672,7 +672,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>\s</code> <code>\v</code></td><td><code>sh</code>, the firmware version</td></tr>
             <tr><td><code>\n</code> <code>\e</code> <code>\a</code> <code>\\</code> <code>\$</code> <code>\nnn</code></td><td>Newline, Esc (ANSI colors), bell, <code>\</code>, <code>$</code>, a character in octal</td></tr>
           </table></div>
-          <div class="callout info">Under the hood, each process is a FreeRTOS task with its own stack, but only one runs at a time: they take turns whenever the running one waits (keyboard, <code>sys.sleep</code>, a full pipe), or every 20 ms for a Lua program. The ESP32-S3 has no MMU, so separate Lua states keep programs apart. At most 12 processes run at once, each needing about 80 KB of internal RAM. Commands that change the shell (<code>cd</code>, <code>export</code>, <code>fg</code>…) or take over the screen cannot be piped or put in the background.</div>
+          <div class="callout info">Under the hood, each process is a FreeRTOS task with its own stack, but only one runs at a time: they take turns whenever the running one waits (keyboard, <code>sys.sleep</code>, a full pipe), or every 20 ms for a Lua program. The ESP32-S3 has no MMU, so separate Lua states keep programs apart. Processes share a few 16 KB stacks in internal RAM: when a waiting process's stack is needed, it is copied to PSRAM and copied back before the process runs again. Each process then costs well under 1 KB of internal RAM, and at most 40 run at once, as long as 64 KB stay free for Wi-Fi. Commands that change the shell (<code>cd</code>, <code>export</code>, <code>fg</code>…) or take over the screen cannot be piped or put in the background.</div>
         </article>
 
         <!-- Scripts -->
