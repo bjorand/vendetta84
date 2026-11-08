@@ -756,6 +756,7 @@ system.tcsetattr(io.stdin, system.TCSANOW,
   {lflag = t.lflag - system.L_ICANON - system.L_ECHO})
 system.setnonblock(io.stdin, true)
 local key, kind = system.readansi(10)   -- "\27[A", "ansi"</pre>
+          <p>On output, the terminal speaks enough xterm for a program drawn with escape codes to run the same on Termina and in the terminal of a PC or a Mac: cursor moves (<code>H</code>, <code>G</code>, <code>d</code>, <code>s</code>/<code>u</code>), erasing (<code>J</code>, <code>K</code>, <code>X</code>), colors in ANSI order with 256 and RGB colors taken to the closest of the 16, the alternate screen (<code>ESC [ ? 1049 h</code>: the shell's screen comes back when the program ends), mouse reporting in raw mode (<code>?1000</code>, <code>?1002</code>, <code>?1003</code>, SGR <code>?1006</code>) and the clipboard through OSC 52. ANSI row 1 is the first row below the status bar, and <code>system.termsize()</code> counts the rows from there.</p>
           <p>luasystem is tested as upstream does: its own specs run with <a href="https://github.com/lunarmodules/busted">busted</a> on the firmware (in the emulator), and 90 of the 95 tests pass. The other 5 time things with <code>gettime()</code>.</p>
           <div class="callout info">A game loop must call <code>sys.yield()</code>, <code>key.wait()</code> or <code>sys.sleep()</code> so that the screen refreshes. The programs in <code>firmware/lua/</code> are built into the firmware: they are updated with each flash and take no room on the filesystem.</div>
         </article>
