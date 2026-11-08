@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TERMINA OS — the system of Termina 80</title>
+<meta name="description" content="TERMINA OS by Vendetta 84: a Unix-style operating system for the ESP32-S3, with processes, pipes, jobs and shell scripts, Lua 5.4, a Git client, a package manager and a windowed desktop. Runs on Termina 80 and in an emulator on your PC.">
+<meta name="theme-color" content="#050706">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Same theme as the home page and the Termina 80 page: phosphor green on near-black. */
+:root {
+  --bg: #050706;
+  --bg-2: #0b0f0d;
+  --card: #0e1311;
+  --line: rgba(220, 255, 235, .09);
+  --line-2: rgba(220, 255, 235, .16);
+  --text: #eef2ef;
+  --body: #b9c2bd;
+  --muted: #8b958f;
+  --phos: #62ffa6;
+  --phos-dim: rgba(98, 255, 166, .14);
+  --amber: #ffb84d;
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+  --display: "Inter Tight", "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.55 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+a { color: inherit; }
+code, pre, kbd { font-family: var(--mono); }
+:not(pre) > code { font-size: .86em; color: var(--phos); }
+kbd {
+  font-size: .78em; padding: 2px 7px; border-radius: 6px; color: var(--text);
+  border: 1px solid var(--line-2); border-bottom-width: 2px; background: var(--card);
+}
+::selection { background: var(--phos); color: var(--bg); }
+
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+}
+.eyebrow {
+  font: 500 12px/1.4 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--phos);
+}
+.eyebrow::before { content: "▍"; margin-right: 8px; animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ===== nav ===== */
+nav {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(5, 7, 6, .72); backdrop-filter: saturate(160%) blur(18px); -webkit-backdrop-filter: saturate(160%) blur(18px);
+  border-bottom: 1px solid var(--line);
+}
+nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 52px; }
+nav .brand { font: 600 15px/1 var(--display); letter-spacing: .14em; text-decoration: none; text-transform: uppercase; }
+nav .brand span { color: var(--phos); }
+nav ul { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
+nav ul a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .2s; }
+nav ul a:hover { color: var(--text); }
+
+/* ===== hero ===== */
+.hero { position: relative; padding: 112px 0 0; text-align: center; overflow: hidden; }
+.hero::before { /* phosphor glow */
+  content: ""; position: absolute; left: 50%; top: 380px; width: 1100px; height: 700px; transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(98,255,166,.16), transparent); pointer-events: none;
+}
+.hero::after { /* receding grid */
+  content: ""; position: absolute; left: -50%; right: -50%; bottom: 0; height: 340px; pointer-events: none;
+  background:
+    linear-gradient(var(--bg), transparent 40%),
+    repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(0deg, var(--line) 0 1px, transparent 1px 40px);
+  transform: perspective(500px) rotateX(62deg); transform-origin: bottom;
+  mask-image: linear-gradient(transparent, #000 60%);
+  -webkit-mask-image: linear-gradient(transparent, #000 60%);
+}
+.hero h1 {
+  font: 700 clamp(56px, 11vw, 136px)/.92 var(--display); letter-spacing: -.045em; margin: 22px 0 18px;
+  background: linear-gradient(180deg, #fff 30%, #9aa59f); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero .tagline { font: 500 clamp(22px, 3vw, 32px)/1.2 var(--display); letter-spacing: -.02em; margin: 0; }
+.hero .tagline em { font-style: normal; color: var(--muted); }
+.hero .lede { max-width: 36em; margin: 18px auto 0; color: var(--muted); }
+.actions { display: flex; gap: 28px; justify-content: center; align-items: center; margin-top: 32px; flex-wrap: wrap; }
+.btn {
+  font: 500 15px/1 var(--sans); text-decoration: none; padding: 13px 24px; border-radius: 999px;
+  background: var(--text); color: var(--bg); transition: background .2s;
+}
+.btn:hover { background: var(--phos); }
+.more { font-size: 15px; color: var(--phos); text-decoration: none; }
+.more:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+.crt {
+  position: relative; z-index: 2; width: min(760px, 100%); margin: 72px auto 0;
+  padding: 18px; border-radius: 34px 34px 0 0;
+  background: linear-gradient(180deg, #1a1f1c, #0c0f0d);
+  border: 1px solid var(--line-2); border-bottom: 0;
+  box-shadow: 0 -1px 0 rgba(255,255,255,.06) inset, 0 40px 120px rgba(98,255,166,.10);
+}
+.crt .screen {
+  position: relative; aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, #0c1a12, #030604 80%);
+  font: 400 clamp(9px, 1.8vw, 15px)/1.5 var(--mono); color: var(--phos); text-align: left;
+  text-shadow: 0 0 8px rgba(98,255,166,.55);
+  padding: 24px 28px; white-space: pre;
+}
+.crt .screen::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(transparent 0 2px, rgba(0,0,0,.35) 2px 3px);
+  box-shadow: inset 0 0 80px rgba(0,0,0,.8);
+}
+.dim { color: #3f8f63; text-shadow: none; }
+.amb { color: var(--amber); text-shadow: 0 0 8px rgba(255,184,77,.5); }
+.cursor { display: inline-block; width: .6em; background: var(--phos); animation: blink 1.1s steps(1) infinite; }
+
+/* ===== stats ===== */
+.stats { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-2); position: relative; z-index: 3; }
+.stats .wrap { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stat { padding: 40px 24px; border-left: 1px solid var(--line); }
+.stat:first-child { border-left: 0; padding-left: 0; }
+.stat b { display: block; font: 600 clamp(30px, 4vw, 44px)/1 var(--display); letter-spacing: -.03em; }
+.stat b small { font-size: .45em; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
+.stat span { display: block; margin-top: 10px; font: 400 12px/1.5 var(--mono); color: var(--muted); }
+
+/* ===== sections ===== */
+section { padding: 140px 0; scroll-margin-top: 52px; }
+section + section { border-top: 1px solid var(--line); }
+section.alt { background: var(--bg-2); }
+.head { max-width: 760px; margin-bottom: 64px; }
+.head h2 { font: 600 clamp(40px, 6vw, 64px)/1.02 var(--display); letter-spacing: -.035em; margin: 16px 0 18px; }
+.head h2 em { font-style: normal; color: var(--muted); }
+.head p { color: var(--muted); font-size: 19px; margin: 0; }
+
+/* bento */
+.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
+.cell {
+  grid-column: span 2; position: relative; overflow: hidden;
+  background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 32px;
+  transition: border-color .3s;
+}
+.cell:hover { border-color: rgba(98,255,166,.35); }
+.cell.wide { grid-column: span 4; }
+.cell.half { grid-column: span 3; }
+.cell.full { grid-column: 1 / -1; }
+.cell .tag { font: 500 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.cell h3 { font: 600 26px/1.15 var(--display); letter-spacing: -.02em; margin: 14px 0 10px; }
+.cell p { margin: 0; color: var(--muted); font-size: 15.5px; }
+.cell p + p { margin-top: 10px; }
+.cell pre {
+  margin: 24px 0 0; padding: 18px 20px; border-radius: 14px; background: #040605; border: 1px solid var(--line);
+  font-size: 13px; line-height: 1.6; color: var(--phos); overflow-x: auto;
+}
+.cell pre .c { color: var(--muted); }
+.cell .big {
+  font: 600 76px/1 var(--display); letter-spacing: -.05em; margin-top: 26px;
+  background: linear-gradient(90deg, var(--phos), #b6ffd6); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.cell.glow::before {
+  content: ""; position: absolute; right: -120px; bottom: -160px; width: 360px; height: 360px; border-radius: 50%;
+  background: radial-gradient(closest-side, var(--phos-dim), transparent); pointer-events: none;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.chips code {
+  font: 400 13px/1 var(--mono); color: var(--text); padding: 8px 12px;
+  border: 1px solid var(--line-2); border-radius: 999px;
+}
+.chips code.on { color: var(--phos); border-color: rgba(98,255,166,.5); }
+
+/* layers diagram */
+.stack { display: grid; gap: 10px; }
+.layer {
+  display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; align-items: center;
+  padding: 22px 28px; border: 1px solid var(--line); border-radius: 18px; background: var(--card);
+}
+.layer b { font: 600 18px/1.3 var(--display); }
+.layer span { color: var(--muted); font-size: 15.5px; }
+.layer.top { border-color: rgba(98,255,166,.4); }
+.layer.top b { color: var(--phos); }
+.layer.hw { background: transparent; border-style: dashed; }
+
+/* try it */
+.try { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+
+footer { border-top: 1px solid var(--line); padding: 48px 0 64px; color: var(--muted); font-size: 13px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+footer b { color: var(--text); font: 600 13px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
+footer b span { color: var(--phos); }
+footer a { color: var(--muted); }
+footer a:hover { color: var(--text); }
+
+@media (max-width: 860px) {
+  .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  nav ul { display: none; }
+  .hero { padding-top: 72px; }
+  .crt { padding: 10px; border-radius: 22px 22px 0 0; margin-top: 48px; }
+  .crt .screen { padding: 14px 16px; border-radius: 12px; }
+  .stats .wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat { padding: 28px 16px; }
+  .stat:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+  section { padding: 96px 0; }
+  .bento, .try { grid-template-columns: minmax(0, 1fr); }
+  .cell, .cell.wide, .cell.half, .cell.full { grid-column: auto; padding: 26px; }
+  .layer { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 20px 22px; }
+}
+@media (prefers-reduced-motion: reduce) { .eyebrow::before, .cursor { animation: none; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="../">Vendetta <span>84</span></a>
+    <ul>
+      <li><a href="#shell">Shell</a></li>
+      <li><a href="#lua">Lua</a></li>
+      <li><a href="#apps">Apps</a></li>
+      <li><a href="#desktop">Desktop</a></li>
+      <li><a href="#inside">Inside</a></li>
+      <li><a href="#try">Try it</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Operating system · v4.3</div>
+    <h1>TERMINA OS</h1>
+    <p class="tagline">A Unix-style system. <em>On a microcontroller.</em></p>
+    <p class="lede">The system of Termina 80, written from scratch for the ESP32-S3. Processes, pipes, jobs and shell scripts; Lua 5.4 programs you write on the machine; Git, packages and a windowed desktop. All of it in 16 MB of flash.</p>
+    <div class="actions">
+      <a class="btn" href="#try">Try it on your PC</a>
+      <a class="more" href="../termina80/#manual">Read the manual ›</a>
+    </div>
+    <div class="crt">
+      <div class="screen"><span class="dim">TERMINA OS 4.3 · 8192 KB PSRAM · termina.local</span>
+
+/$ cat log.txt | grep -i error | wc -l
+3
+/$ git clone https://github.com/rxi/json.lua &amp;
+[1] 5
+/$ pkg install nightstand
+nightstand 2.0.0 installed
+/$ ps
+  PID  PPID  PGID STAT     TIME COMMAND
+    1     0     1 S       0:42 sh
+    5     1     5 R       0:03 git
+    7     1     7 R+      0:00 ps
+<span class="amb">[1]+  Done                 git clone https://github.com/rxi/json.lua</span>
+/$ edit game.lua<span class="cursor"> </span></div>
+    </div>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="wrap">
+    <div class="stat"><b>12</b><span>Processes at once, with signals and job control</span></div>
+    <div class="stat"><b>Lua 5.4</b><span>Standard library, plus luasystem and lfs</span></div>
+    <div class="stat"><b>1000</b><span>Rows of console scrollback</span></div>
+    <div class="stat"><b>1<small>MB</small></b><span>Of PSRAM per Lua program, isolated</span></div>
+  </div>
+</div>
+
+<section id="shell">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Shell</div>
+      <h2>It feels like Unix. <em>Because it works like it.</em></h2>
+      <p>Each command runs in its own process. Pipe them, redirect them, send them to the background, script them. Your muscle memory works here.</p>
+    </div>
+    <div class="bento">
+      <div class="cell wide glow">
+        <div class="tag">Processes and jobs</div>
+        <h3>Pipes, redirections, background jobs.</h3>
+        <p><code>|</code>, <code>&gt;</code>, <code>2&gt;&amp;1</code>, <code>&amp;&amp;</code>, <code>&amp;</code>. <kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts, <kbd>Ctrl</kbd>+<kbd>Z</kbd> stops, <code>fg</code> and <code>bg</code> bring jobs back. Jobs keep running behind the desktop and the editor.</p>
+<pre>/$ find . -name "*.lua" | sort | tee list.txt | wc -l
+27
+/$ sleep 60 &amp;
+[1] 9
+/$ kill %1</pre>
+      </div>
+      <div class="cell">
+        <div class="tag">Signals</div>
+        <h3><code>ps</code>, <code>kill</code>, <code>wait</code>.</h3>
+        <p>HUP, INT, KILL, TERM, STOP, CONT, PIPE and their friends, process groups and exit codes, as you know them.</p>
+        <div class="big">12</div>
+      </div>
+      <div class="cell half">
+        <div class="tag">Scripts</div>
+        <h3>A small sh, for real.</h3>
+        <p><code>if</code>, <code>for</code>, <code>while</code>, <code>case</code>, functions, <code>$(...)</code>, <code>$((...))</code>, <code>${X:-default}</code>, <code>read</code>, <code>test</code>. A file <code>name.sh</code> runs as the command <code>name</code>.</p>
+<pre><span class="c"># count.sh: count the lines of the files given</span>
+total=0
+for f in "$@"; do
+  n=$(wc -l &lt; "$f")
+  echo "$f: $n"
+  total=$((total + n))
+done
+echo "total: $total"</pre>
+      </div>
+      <div class="cell half">
+        <div class="tag">The prompt</div>
+        <h3>Comfortable at the keyboard.</h3>
+        <p>History with <kbd>↑</kbd> and <kbd>Ctrl</kbd>+<kbd>R</kbd> search, <kbd>Tab</kbd> completion, wildcards, aliases, a <code>/.profile</code> and a bash-style <code>PS1</code>.</p>
+        <p><kbd>Shift</kbd>+<kbd>PgUp</kbd> or the mouse wheel scroll back through the last 1000 rows. One clipboard is shared by the prompt, the editor and the desktop.</p>
+        <div class="chips">
+          <code>ls</code><code>cp -r</code><code>find</code><code>grep</code><code>sort</code><code>uniq</code><code>diff</code><code>less</code><code>head</code><code>tail</code><code>tee</code><code>du</code><code>df</code><code>dmesg</code><code>mount</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="lua" class="alt">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Programming</div>
+      <h2>Write it here. <em>Run it here.</em></h2>
+      <p>Programs are Lua 5.4 files. Type <code>edit game.lua</code>, save, then type <code>game</code>. No PC, no toolchain, no flashing.</p>
+    </div>
+    <div class="bento">
+      <div class="cell wide">
+        <div class="tag">Lua 5.4</div>
+        <h3>The standard language, and then some.</h3>
+        <p>The full standard library: <code>io</code>, <code>os</code>, <code>string</code>, <code>coroutine</code>, <code>require</code>. The machine's own libraries live in the <code>termina</code> table, so the global table holds standard Lua only.</p>
+<pre>local term, key, sys = termina.term, termina.key, termina.sys
+term.cls()
+term.put(10, 5, "Press a key", 0x0A)
+local e = key.wait()
+print("You typed " .. (e.ch or e.key))</pre>
+      </div>
+      <div class="cell">
+        <div class="tag">Isolation</div>
+        <h3>A crash stays a crash.</h3>
+        <p>Each program has its own Lua state and its own memory limit. When it runs out, it stops with "Out of memory", and the rest of the machine keeps running.</p>
+      </div>
+      <div class="cell full">
+        <div class="tag">Libraries</div>
+        <h3>The whole machine, from Lua.</h3>
+        <p>Screen, keyboard, mouse, sound, files, HTTPS and TLS sockets, processes, virtual terminals, syntax highlighting, settings and the isometric world drawn by the video card.</p>
+        <div class="chips">
+          <code class="on">termina.term</code><code class="on">termina.key</code><code class="on">termina.mouse</code><code class="on">termina.sound</code><code class="on">termina.fs</code><code class="on">termina.net</code><code class="on">termina.proc</code><code class="on">termina.vt</code><code class="on">termina.hl</code><code class="on">termina.store</code><code class="on">termina.iso</code><code class="on">termina.win</code><code>system</code><code>lfs</code><code>io.popen</code><code>os.execute</code>
+        </div>
+      </div>
+      <div class="cell half">
+        <div class="tag">Compatibility</div>
+        <h3>Upstream Lua code runs.</h3>
+        <p><a class="more" href="https://github.com/lunarmodules/luasystem">luasystem</a> and LuaFileSystem are built in, with termios-style raw mode on the terminal. luasystem's own test suite runs on the machine with busted: 90 of its 95 tests pass.</p>
+      </div>
+      <div class="cell half">
+        <div class="tag">PICO-8 carts</div>
+        <h3><code>pico8 game</code>.</h3>
+        <p>Plays <code>.p8</code> and <code>.p8.png</code> cartridges with its own implementation of the format and the API, scaled up on the HDMI screen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="apps">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Built in</div>
+      <h2>Ready to work. <em>Out of the box.</em></h2>
+      <p>The tools a home computer needs, all running on the machine itself.</p>
+    </div>
+    <div class="bento">
+      <div class="cell half glow">
+        <div class="tag">Git</div>
+        <h3>A real Git client.</h3>
+        <p>Clone, commit, push and pull over smart HTTPS to GitHub, GitLab or Gitea. The repository on the machine is a normal one: your PC's git reads it.</p>
+<pre>/$ git clone https://github.com/rxi/json.lua
+/$ cd json.lua
+/json.lua$ edit README.md
+/json.lua$ git commit -am "From TERMINA"
+/json.lua$ git push</pre>
+      </div>
+      <div class="cell half">
+        <div class="tag">Packages</div>
+        <h3><code>pkg install</code>.</h3>
+        <p>Community programs, modules, desktop apps and screen savers from the <a class="more" href="https://github.com/bjorand/termina-packages">termina-packages</a> registry, with their dependencies and SHA-1 checks. Add your own registries next to it.</p>
+<pre>/$ pkg update
+/$ pkg search game
+/$ pkg install nightstand
+/$ saver nightstand</pre>
+      </div>
+      <div class="cell">
+        <div class="tag">Editor</div>
+        <h3>Full-screen <code>edit</code>.</h3>
+        <p>nano-style keys, selection, search and replace, undo and redo, syntax highlighting for Lua and shell scripts.</p>
+      </div>
+      <div class="cell">
+        <div class="tag">Web</div>
+        <h3>A text-mode browser.</h3>
+        <p><code>web</code> searches DuckDuckGo and follows links with the keyboard or the mouse. <code>telnet</code> speaks ANSI.</p>
+      </div>
+      <div class="cell">
+        <div class="tag">Sharing</div>
+        <h3><code>share on</code>.</h3>
+        <p>A web file manager on the machine: drop files on it from any browser on your network.</p>
+      </div>
+      <div class="cell half">
+        <div class="tag">Storage</div>
+        <h3>Unix paths, two disks.</h3>
+        <p>An 11.9 MB flash filesystem, and a microSD card on <code>/mnt/sd</code> that <code>cp</code>, <code>mv</code>, Lua, git and <code>pkg</code> all see.</p>
+      </div>
+      <div class="cell half">
+        <div class="tag">Play</div>
+        <h3>Games, art and sound.</h3>
+        <p>A snake game, a mouse drawing program, RTTTL melodies on the buzzer and screen savers you can write in Lua.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="desktop" class="alt">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">TERMINA WIN</div>
+      <h2>Windows, <em>the way they used to be.</em></h2>
+      <p>Type <code>win</code> for a 3.1-style desktop driven by the mouse: icons, a taskbar with a Start menu and a clock, windows you move, resize, minimize and maximize.</p>
+    </div>
+    <div class="bento">
+      <div class="cell wide">
+        <div class="tag">Your apps</div>
+        <h3>A desktop app is a Lua file.</h3>
+        <p>Put <code>-- @app Name</code> at the top and it shows up on the desktop. Apps run at the same time, each with its own globals; an error only closes the faulty one.</p>
+<pre>-- @app Hello
+local win = termina.win
+local f = win.open{title = "Hello", w = 160, h = 60}
+f:cls(15)
+f:text(10, 20, "Hello!", 1, nil, "vga")
+while win.event().type ~= "close" do end</pre>
+      </div>
+      <div class="cell">
+        <div class="tag">Bundled</div>
+        <h3>The essentials.</h3>
+        <p>Files, Notepad, Clock, Settings and a real Terminal in a window, where commands, Git, <code>pkg</code> and your scripts run.</p>
+      </div>
+      <div class="cell full">
+        <div class="tag">Drawn by the video card</div>
+        <h3>Moving a window costs a few bytes.</h3>
+        <p>The background, each window, the taskbar and the menus are kept as planes in the HDMI video card's memory. Moving or raising a window only changes their positions; only the rows whose contents changed go over the link. <a class="more" href="../termina80/#hdmi">How the video card works ›</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Under the hood</div>
+      <h2>Small, and honest <em>about it.</em></h2>
+      <p>A microcontroller is not a PC. TERMINA OS gives you the Unix model on top of it, and tells you where it stops.</p>
+    </div>
+    <div class="stack">
+      <div class="layer top"><b>Your programs</b><span>Lua scripts, shell scripts, desktop apps, packages, screen savers.</span></div>
+      <div class="layer"><b>Shell and tools</b><span>The sh language, job control, Git, <code>pkg</code>, <code>edit</code>, <code>web</code>, TERMINA WIN, written in C++ and in Lua.</span></div>
+      <div class="layer"><b>Lua runtime</b><span>Lua 5.4 with 32-bit numbers. One state per program, memory taken from PSRAM, 1 MB each (2 MB for built-in programs and desktop apps).</span></div>
+      <div class="layer"><b>Kernel</b><span>Processes with PIDs, process groups, signals, file descriptors, pipes and an environment. Each process is a FreeRTOS task; they take turns whenever one waits, or every 20 ms for Lua. A terminal with termios-style modes and a scrollback.</span></div>
+      <div class="layer"><b>Drivers</b><span>LittleFS and FAT on microSD, Wi-Fi with HTTPS and TLS, NTP time, the keyboard and mouse link from the PC, sound, LEDs and the OLED status screen.</span></div>
+      <div class="layer hw"><b>Hardware</b><span>ESP32-S3 at 240 MHz, dual core, 8 MB PSRAM, 16 MB flash; a Raspberry Pi Pico 2W as HDMI video card.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="try" class="alt">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Try it</div>
+      <h2>No board? <em>No problem.</em></h2>
+      <p>The same system runs on the real machine and on your PC.</p>
+    </div>
+    <div class="try">
+      <div class="cell glow">
+        <div class="tag">Emulator</div>
+        <h3><code>termina-emu</code></h3>
+        <p>Runs the real, unmodified firmware on your PC, with the video card's own code. The window is the HDMI screen, keyboard, mouse and speaker. Handy for writing a Lua program or an app before it goes on the board.</p>
+        <p><a class="more" href="../termina80/#emulator">Set up the emulator ›</a></p>
+      </div>
+      <div class="cell">
+        <div class="tag">The machine</div>
+        <h3>Termina 80</h3>
+        <p>A compact retro computer for any HDMI screen, built from common parts: an ESP32-S3 board, a Pico 2W and a 3D-printed case. Your PC's keyboard and mouse reach it over Wi-Fi.</p>
+        <p><a class="more" href="../termina80/">Discover Termina 80 ›</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <b>Vendetta <span>84</span></b>
+    <span>&copy; 2026 Vendetta 84 · <a href="../">Home</a> · <a href="../termina80/">Termina 80</a> · <a href="mailto:hello@vendetta84.com">hello@vendetta84.com</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

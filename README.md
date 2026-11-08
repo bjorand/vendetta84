@@ -6,4 +6,5 @@ First machine: Termina 80.
 Static site with no build step:
 
 - `index.html`: the studio home page;
-- `termina80/`: the Termina 80 page and user manual, with its images in `termina80/img/`.
+- `termina80/`: the Termina 80 page and user manual, with its images in `termina80/img/`;
+- `termina-os/`: the Termina OS page, the system that runs on Termina 80.
