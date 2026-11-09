@@ -354,8 +354,8 @@ notes.txt: 12
       </div>
       <div class="cell">
         <div class="tag">Colors</div>
-        <h3>256 colors.</h3>
-        <p>The 256 colors of xterm in every cell, 24-bit ones taken to the closest: themes and color charts look as on a PC, in phosphor shades on a phosphor theme.</p>
+        <h3>256 colors, real glyphs.</h3>
+        <p>The 256 colors of xterm in every cell, and the characters modern TUIs draw with: braille plots, rounded and heavy boxes, block eighths, sextants, Powerline. Three fonts: classic, Spleen and Terminus.</p>
       </div>
       <div class="cell">
         <div class="tag">Packages</div>
@@ -755,6 +755,7 @@ system.tcsetattr(io.stdin, system.TCSANOW,
 system.setnonblock(io.stdin, true)
 local key, kind = system.readansi(10)   -- "\27[A", "ansi"</pre>
           <p>On output, the terminal speaks enough xterm for a program drawn with escape codes to run the same on Termina and in the terminal of a PC or a Mac: cursor moves (<code>H</code>, <code>G</code>, <code>d</code>, <code>s</code>/<code>u</code>), erasing (<code>J</code>, <code>K</code>, <code>X</code>), colors in ANSI order, the 256 colors of xterm (<code>38;5;n</code>) and RGB ones (<code>38;2;r;g;b</code>) taken to the closest of the 256, the alternate screen (<code>ESC [ ? 1049 h</code>: the shell's screen comes back when the program ends), mouse reporting in raw mode (<code>?1000</code>, <code>?1002</code>, <code>?1003</code>, SGR <code>?1006</code>) and the clipboard through OSC 52. ANSI row 1 is the first row below the status bar, and <code>system.termsize()</code> counts the rows from there.</p>
+          <p>Text is UTF-8. Beyond code page 437, a cell shows braille patterns (plots in 2&times;4 dots per cell), the box lines CP437 lacks (heavy, dashed, rounded &#x256D;&#x256E;&#x2570;&#x256F;, diagonals), block eighths, quadrants and sextants, the Powerline separators, accented capitals and other Latin letters, typographic quotes and dashes, and common marks (&#x2713; &#x2717; &#x25CF; &#x25B6;). Lines and blocks are drawn to the cell's size, so they meet from cell to cell. The <code>font</code> line of <code>/etc/termina.conf</code>, read at boot, picks the font: <code>classic</code>, <a href="https://github.com/fcambus/spleen">spleen</a> or <a href="https://terminus-font.sourceforge.net/">terminus</a>.</p>
           <p>luasystem is tested as upstream does: its own specs run with <a href="https://github.com/lunarmodules/busted">busted</a> on the firmware (in the emulator), and 90 of the 95 tests pass. The other 5 time things with <code>gettime()</code>.</p>
           <div class="callout info">A game loop must call <code>sys.yield()</code>, <code>key.wait()</code> or <code>sys.sleep()</code> so that the screen refreshes. The programs in <code>firmware/lua/</code> are built into the firmware: they are updated with each flash and take no room on the filesystem.</div>
         </article>
@@ -807,7 +808,7 @@ pkg url [address]     <span class="c">change the main registry</span></pre>
             <tr><td><code>firmware/src/display.*</code></td><td>Rendering in strips of 16 lines, without a full framebuffer: only modified strips go back to the display. <code>display_hdmi.*</code> talks to the Pico</td></tr>
             <tr><td><code>video/</code></td><td>Pico 2W video card firmware; the link protocol is <code>video/include/vlink.h</code></td></tr>
             <tr><td><code>firmware/src/proc.*</code></td><td>Processes: FreeRTOS tasks, file descriptors, pipes, signals, environment</td></tr>
-            <tr><td><code>firmware/src/term.*</code></td><td>CP437 text grid in 256 colors, xterm escape codes, cursor, themes</td></tr>
+            <tr><td><code>firmware/src/term.*</code></td><td>Text grid in 256 colors, xterm escape codes, cursor, themes, fonts; <code>fonts/</code> holds the glyph banks written by <code>tools/mkfont</code></td></tr>
             <tr><td><code>firmware/src/net.*</code> <code>input.*</code></td><td>Wi-Fi, mDNS, TCP server, event queue</td></tr>
             <tr><td><code>firmware/src/http.*</code> <code>html.*</code></td><td>HTTP(S) client and HTML tokenizer, streaming</td></tr>
             <tr><td><code>firmware/src/usbmouse.*</code> <code>webfs.*</code></td><td>USB host mouse driver; web file manager on port 80</td></tr>
