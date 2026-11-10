@@ -302,8 +302,8 @@ notes.txt: 12
 <div class="stats">
   <div class="wrap">
     <div class="stat"><b>240<small>MHz</small></b><span>ESP32-S3 · dual core · 8 MB PSRAM</span></div>
-    <div class="stat"><b>106×40</b><span>Text, or 80×30 with the VGA font</span></div>
-    <div class="stat"><b>640×480</b><span>HDMI at 60 Hz via a Pico 2W</span></div>
+    <div class="stat"><b>170×50</b><span>Text, or 128×37 with the VGA font</span></div>
+    <div class="stat"><b>1024×600</b><span>HDMI at 60 Hz via a Pico 2W</span></div>
     <div class="stat"><b>11.9<small>MB</small></b><span>LittleFS filesystem</span></div>
   </div>
 </div>
@@ -411,14 +411,14 @@ notes.txt: 12
     </div>
     <dl class="specs">
       <dt>Processor</dt><dd><b>ESP32-S3</b> at 240 MHz, dual core, on an ESP32-S3-DevKitC-1 N16R8: 16 MB flash, 8 MB PSRAM.</dd>
-      <dt>Display</dt><dd>Any HDMI screen, <b>640×480 at 60 Hz</b> DVI from a Raspberry Pi Pico 2W video card. 106×40 text with the 6×8 font, or 80×30 with the 8×16 VGA font.</dd>
+      <dt>Display</dt><dd>A 7" HDMI panel, <b>1024×600 at 60 Hz</b> DVI, its native size, from a Raspberry Pi Pico 2W video card. 170×50 text with the 6×8 font, or 128×37 with the 8×16 VGA font.</dd>
       <dt>Storage</dt><dd><b>11.9 MB</b> LittleFS filesystem, plus an optional <b>microSD</b> card on <code>/mnt/sd</code>.</dd>
       <dt>Software</dt><dd><b>Lua 5.4</b> with 32-bit numbers, 1 MB per program. Up to <b>40 processes</b> with pipes, signals and job control.</dd>
       <dt>Sound</dt><dd>Passive buzzer, RTTTL melodies. Disk and network LEDs, and an optional OLED status screen.</dd>
       <dt>Input</dt><dd>Keyboard and mouse from the PC over <b>TCP 2323</b>, 8-byte frames, mDNS discovery <code>_termina._tcp</code>. Optional USB boot-protocol mouse.</dd>
       <dt>Connections</dt><dd>
         <div class="flow"><span>PC · termina-input</span>→ Wi-Fi · TCP 2323 →<span class="on">ESP32</span></div>
-        <div class="flow"><span class="on">ESP32</span>→ SPI 20 MHz →<span>Pico 2W · scene</span>→ HSTX · DVI →<span>HDMI 640×480</span></div>
+        <div class="flow"><span class="on">ESP32</span>→ SPI 20 MHz →<span>Pico 2W · scene</span>→ HSTX · DVI →<span>HDMI 1024×600</span></div>
       </dd>
     </dl>
   </div>
@@ -494,7 +494,7 @@ notes.txt: 12
         <!-- HDMI -->
         <article class="chapter" id="hdmi">
           <h3>HDMI video card</h3>
-          <p>TERMINA drives any HDMI screen. A <strong>Raspberry Pi Pico 2W</strong> acts as the video card, a bit like the picture chip of an 80s console: the ESP32 sends it a description of the screen over SPI, and the RP2350 builds each line just before its HSTX block sends it out as <strong>640×480 at 60 Hz</strong> DVI.</p>
+          <p>TERMINA drives a 7" HDMI panel. A <strong>Raspberry Pi Pico 2W</strong> acts as the video card, a bit like the picture chip of an 80s console: the ESP32 sends it a description of the screen over SPI, and the RP2350 builds each line just before its HSTX block sends it out as <strong>1024×600 at 60 Hz</strong> DVI (reduced blanking, the RP2350 at 222 MHz): the panel's native size, shown pixel for pixel. Such panels take 50 and 60 Hz, not 30 or 40.</p>
 <pre>ESP32 ──SPI 20 MHz──▶ Pico 2W (scene, line by line) ──HSTX/DVI──▶ HDMI screen</pre>
           <h4>What the Pico draws itself</h4>
           <ul>
@@ -502,7 +502,7 @@ notes.txt: 12
             <li><strong>The isometric world</strong> of the <code>iso</code> library: the sprites and the map go once, then only the camera and the people; the Pico draws what changed.</li>
             <li><strong>The mouse pointer and the scanlines</strong>, in every mode.</li>
           </ul>
-          <p>The rest (paint, screen savers) still goes as strips of 16 lines into a 640×480 framebuffer in 256 colors (RGB332). The text screen and the world show the exact colors. Text modes are 80×30 or 106×40 (<code>mode 106|80</code>).</p>
+          <p>The text screen and the mouse pointer use the panel's pixels. The rest (paint, screen savers, PICO-8, the isometric world) goes into a 512×300 framebuffer in 256 colors (RGB332), each dot shown as 2×2 pixels; paint and the savers send it as strips of 20 lines. The text screen and the world show the exact colors. Text modes are 128×37 or 170×50 (<code>mode 170|128</code>).</p>
           <h4>Pico 2W → HDMI plug</h4>
           <p>Use a bare 19-pin HDMI male breakout. Each of the 8 signals goes through a <strong>270 Ω resistor</strong> (220 to 330 Ω also work). Keep the wires under 10 cm and twist each +/− pair together.</p>
           <div class="table-wrap"><table>
@@ -526,7 +526,7 @@ notes.txt: 12
           </table></div>
 <pre>pio run -d video -t upload
 pio run -d firmware -t upload -t monitor</pre>
-          <div class="callout info">Hold BOOTSEL while plugging the Pico in to flash it the first time. On its own, it shows a test pattern reading <code>TERMINA VIDEO 640x480 V11</code>: swapped colors mean two swapped data pairs, no image usually means a reversed pair or a missing resistor. Every second, the Pico prints its slowest line and the late lines on its USB serial port; the second number must stay at 0. It also counts its drawing work (protocol V8) and the busy time of its two cores (V10), which the ESP32 reads back. From V11 it keeps a sprite library in its own flash, from 1 MB on, for the isometric world: <code>sysinfo</code> shows its size and how many times the card's flash was written (it takes about 100,000).</div>
+          <div class="callout info">Hold BOOTSEL while plugging the Pico in to flash it the first time. On its own, it shows a test pattern reading <code>TERMINA VIDEO 1024x600 V15</code>: swapped colors mean two swapped data pairs, no image usually means a reversed pair or a missing resistor. Every second, the Pico prints its slowest line and the late lines on its USB serial port; the second number must stay at 0. It also counts its drawing work (protocol V8) and the busy time of its two cores (V10), which the ESP32 reads back. From V11 it keeps a sprite library in its own flash, from 1 MB on, for the isometric world: <code>sysinfo</code> shows its size and how many times the card's flash was written (it takes about 100,000).</div>
           <div class="callout info">Flash both boards after an update. <code>ver</code> and <code>sysinfo</code> show the video card's version next to the firmware's, read over the MISO wire: <code>Video card 1.9.0, protocol V11</code> when both match, and <code>flash video/</code> when they differ or when the card does not answer on MISO (no wire, or a card older than V7).</div>
         </article>
 
@@ -583,7 +583,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
           <div class="callout info">Run <code>go generate</code> before each build that follows a firmware change. The Go cache does not see the C++ sources included from <code>firmware/</code>, so the generator writes their fingerprint into <code>internal/emu/fw_*.cpp</code>. It also produces the built-in Lua programs.</div>
           <ul>
             <li>The filesystem is the <code>%AppData%\termina\A</code> directory (<code>-disk</code> option). NVS settings are stored next to it, in <code>nvs.txt</code>.</li>
-            <li>The mouse follows the PC pointer, without capture. <code>-scale 1</code> makes the window 640×480 (the default is twice that) and <code>-mute</code> turns the sound off.</li>
+            <li>The mouse follows the PC pointer, without capture. <code>-scale 2</code> makes the window 2048×1200 (the default is 1024×600) and <code>-mute</code> turns the sound off.</li>
             <li><code>-type</code> types text after startup and <code>-shot f.png</code> saves the screen then quits. In <code>-type</code>: <code>\n</code> Enter, <code>\e</code> Esc, <code>\s</code> Ctrl+Esc, <code>\c</code> Ctrl+C, <code>\z</code> Ctrl+Z, <code>\u</code>/<code>\d</code> arrows, <code>\p</code> a one-second pause.</li>
             <li>Wi-Fi is simulated and always connected. The browser goes through Go's network stack, which verifies TLS certificates. <code>ping</code> times a TCP connection to port 80 or 443.</li>
             <li>Below the screen, a front panel shows the disk and network LEDs and the OLED status screen, drawn by the firmware's own code on a simulated SSD1306. <code>-panel=false</code> hides it. The CPU loads are the time the threads of each core take on the PC; the video card's free memory is not simulated and reads 0K.</li>
@@ -609,7 +609,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>export NAME=value</code> <code>unset NAME</code> <code>env</code></td><td>Variables, inherited by the programs started afterwards. <code>PATH</code> lists the directories where a command <code>name</code> is looked for, as <code>name.lua</code> or <code>name.sh</code>, after the built-in commands and programs: <code>.:/:/.pkg/bin</code> by default; <code>export PATH=$PATH:/bin</code> adds <code>/bin</code></td></tr>
             <tr><td><code>alias name='cmd args'</code> <code>unalias name</code> <code>history [-c]</code></td><td>Aliases and command history</td></tr>
             <tr><td><code>edit f</code></td><td>nano-style editor with Lua and shell highlighting, files up to 256 KB: <kbd>^S</kbd> save, <kbd>^X</kbd> exit · <kbd>Shift</kbd>+arrows select, <kbd>Alt</kbd>+<kbd>A</kbd> all · <kbd>^K</kbd> cut, <kbd>Alt</kbd>+<kbd>C</kbd> copy, <kbd>^U</kbd> paste (the selection, or the whole line) · <kbd>^W</kbd> search, <kbd>F3</kbd> next, <kbd>^R</kbd> replace · <kbd>^Z</kbd> undo, <kbd>^Y</kbd> redo · <kbd>^G</kbd> go to a line</td></tr>
-            <tr><td><code>theme green|amber|white|cga</code> <code>scan on|off</code> <code>mode 106|80</code></td><td>Display (settings remembered)</td></tr>
+            <tr><td><code>theme green|amber|white|cga</code> <code>scan on|off</code> <code>mode 170|128</code></td><td>Display (settings remembered)</td></tr>
             <tr><td><code>saver [none|stars|mystify] [minutes]</code></td><td>Screen saver after that long without a key or the mouse, at the prompt or over a running program (the key that wakes it is not typed; a program can turn it off with <code>sys.saver(false)</code>)</td></tr>
             <tr><td><code>mem</code> <code>df</code> <code>uptime</code> <code>date</code> <code>ver</code> <code>sysinfo</code></td><td>System information</td></tr>
             <tr><td><code>wifi</code></td><td>Network manager (a package installed with the firmware): the connection and the networks around, to join one without rebooting (<code>wifi status</code>, <code>wifi network password</code> from the prompt)</td></tr>
@@ -721,11 +721,11 @@ end</pre>
           <div class="table-wrap"><table>
             <tr><th>Module</th><th>Functions</th></tr>
             <tr><td>global</td><td><code>print(...)</code>, <code>require "mod"</code> (loads <code>mod.lua</code>), <code>dofile([name])</code>, <code>loadfile([name [, mode [, env]]])</code>, the <code>arg</code> table (<code>arg[0]</code> is the script)</td></tr>
-            <tr><td><code>termina</code></td><td>TERMINA's own libraries, the rows below (also <code>require "termina"</code>). They have no global names of their own: a program starts with those it uses, <code>local term, key, sys = termina.term, termina.key, termina.sys</code>. <code>termina.screen</code> exists in screen savers</td></tr>
+            <tr><td><code>termina</code></td><td>TERMINA's own libraries, the rows below (also <code>require "termina"</code>). They have no global names of their own: a program starts with those it uses, <code>local term, key, sys = termina.term, termina.key, termina.sys</code>. <code>termina.screen</code> exists in screen savers (a 512×300 canvas)</td></tr>
             <tr><td><code>package</code></td><td>The standard library: <code>require</code> looks in <code>package.preload</code>, then the modules built into the firmware, then along <code>package.path</code> (<code>require "a.b"</code> loads <code>/a/b.lua</code> or <code>/pkg/a/b.lua</code>, else <code>a/b.lua</code> in the current directory: the modules next to a program run from its folder); <code>loaded</code>, <code>searchers</code>, <code>searchpath(name, path)</code>. C libraries cannot be loaded, but three are built in: those of <code>system</code>, <code>lfs</code> and lua-term (<code>term.core</code>)</td></tr>
             <tr><td><code>termina.term</code></td><td><code>cls()</code>, <code>put(x, y, text [, attr])</code>, <code>cell(x, y, ch [, attr])</code>, <code>char(x, y)</code>, <code>fill(y [, ch, attr])</code>, <code>cursor([x, y])</code>, <code>showcursor(b)</code>, <code>attr([a])</code>, <code>cols()</code>, <code>rows()</code>; <code>putattr(x, y, text, attrs [, w [, pad]])</code> draws a line with one attribute per byte (<code>attrs</code> is a string, as <code>termina.hl</code> makes them)</td></tr>
             <tr><td><code>termina.key</code></td><td><code>poll()</code> (event or <code>nil</code>), <code>wait()</code>, <code>held(name)</code>: whether a key is down now, for games. Events: <code>{type="char", ch="é"}</code>, <code>{type="key", key="up", ctrl, shift, alt}</code>, <code>{type="mouse", button, down, x, y}</code>, <code>{type="move", x, y, buttons}</code> (dragging), <code>{type="wheel", n, x, y}</code>; <code>x</code>, <code>y</code> are the text cell under the pointer</td></tr>
-            <tr><td><code>termina.mouse</code></td><td><code>pos()</code> → x, y in pixels; <code>cell()</code> → the text cell under the pointer; <code>down([button])</code>; <code>show(b)</code></td></tr>
+            <tr><td><code>termina.mouse</code></td><td><code>pos()</code> → x, y in dots of the 512×300 picture (those of <code>iso</code> and the screen savers); <code>cell()</code> → the text cell under the pointer; <code>down([button])</code>; <code>show(b)</code></td></tr>
             <tr><td><code>termina.hl</code></td><td>Syntax highlighting, a line at a time: <code>lua(line [, state [, attr]])</code> and <code>sh(...)</code> → attributes for <code>term.putattr</code>, state for the next line</td></tr>
             <tr><td><code>termina.vt</code></td><td>Virtual terminals: <code>open(cols, rows)</code> → a screen of its own that a program draws where it wants (the terminal panel of an editor). <code>v:spawn(line [, dir])</code> runs a command line into it, <code>v:job()</code>, <code>v:kill([signal])</code>; <code>v:write(s)</code>, <code>v:draw(x, y [, w, h])</code>, <code>v:line(row)</code>, <code>v:cursor()</code>, <code>v:scroll(n)</code> (the last 500 lines), <code>v:resize(cols, rows)</code> (the lines are kept), <code>v:clear()</code>, <code>v:close()</code></td></tr>
             <tr><td><code>termina.sound</code></td><td><code>tone(hz [, ms])</code>, <code>play(rtttl)</code>, <code>stop()</code>, <code>busy()</code>, <code>tune(name)</code></td></tr>
@@ -807,7 +807,7 @@ pkg url [address]     <span class="c">change the main registry</span></pre>
             <tr><td><code>cmd/termina-input/</code></td><td>Go client: ebiten for capture, zeroconf for discovery</td></tr>
             <tr><td><code>internal/capture/</code></td><td>ebiten keyboard and mouse → frames, shared with the emulator</td></tr>
             <tr><td><code>cmd/termina-emu/</code> <code>internal/emu/</code></td><td>The emulator; <code>hal/</code> simulates the hardware</td></tr>
-            <tr><td><code>firmware/src/display.*</code></td><td>Rendering in strips of 16 lines, without a full framebuffer: only modified strips go back to the display. <code>display_hdmi.*</code> talks to the Pico</td></tr>
+            <tr><td><code>firmware/src/display.*</code></td><td>Rendering in strips of 20 lines, without a full framebuffer: only modified strips go back to the display. <code>display_hdmi.*</code> talks to the Pico</td></tr>
             <tr><td><code>video/</code></td><td>Pico 2W video card firmware; the link protocol is <code>video/include/vlink.h</code></td></tr>
             <tr><td><code>firmware/src/proc.*</code></td><td>Processes: FreeRTOS tasks, file descriptors, pipes, signals, environment</td></tr>
             <tr><td><code>firmware/src/term.*</code></td><td>Text grid in 256 colors, xterm escape codes, cursor, themes, fonts; <code>fonts/</code> holds the glyph banks written by <code>tools/mkfont</code></td></tr>
