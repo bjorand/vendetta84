@@ -372,10 +372,23 @@ notes.txt: 12
         <h3>Full-screen <code>edit</code>.</h3>
         <p>Selection, search and replace, undo, a clipboard shared with the prompt, and syntax highlighting for Lua and shell scripts.</p>
       </div>
+      <div class="cell wide glow">
+        <div class="tag">Sound card</div>
+        <h3>A 4-voice chiptune synth.</h3>
+        <p>An ATtiny85 on its own I2C bus: pulse, triangle, sawtooth and noise, each with an ADSR envelope, mixed at 15.6 kHz. The ESP32 flashes it by itself, no cable to the PC. Write songs in the <code>chipmunk</code> tracker, or play it from Lua.</p>
+<pre>local synth = termina.synth
+synth.voice(1, {wave = "triangle", attack = 4})
+synth.note(1, 440, 500)</pre>
+      </div>
+      <div class="cell">
+        <div class="tag">Radio</div>
+        <h3>Termina FM.</h3>
+        <p>Endless lofi and synthwave, composed on the fly by a server and played note by note on your card. Every machine tuned in hears the same song.</p>
+      </div>
       <div class="cell half">
         <div class="tag">Play</div>
         <h3>Games and art.</h3>
-        <p>A snake game, a mouse drawing program, RTTTL melodies on a passive buzzer.</p>
+        <p>A snake game, a mouse drawing program, PICO-8 cartridges, RTTTL melodies on a passive buzzer.</p>
       </div>
       <div class="cell half">
         <div class="tag">Themes</div>
@@ -415,7 +428,7 @@ notes.txt: 12
       <dt>Display</dt><dd>A 7" HDMI panel, <b>1024×600 at 60 Hz</b> DVI, its native size, from a Raspberry Pi Pico 2W video card, mounted upright: a <b>600×1024 portrait</b> screen. 100×85 text with the 6×8 font, or 75×64 with the 8×16 VGA font.</dd>
       <dt>Storage</dt><dd><b>11.9 MB</b> LittleFS filesystem, plus an optional <b>microSD</b> card on <code>/mnt/sd</code>.</dd>
       <dt>Software</dt><dd><b>Lua 5.4</b> with 32-bit numbers, 1 MB per program. Up to <b>40 processes</b> with pipes, signals and job control.</dd>
-      <dt>Sound</dt><dd>Passive buzzer, RTTTL melodies; optional 4-voice chiptune sound card (ATtiny85). Disk and network LEDs, and an optional OLED status screen.</dd>
+      <dt>Sound</dt><dd>Passive buzzer, RTTTL melodies; optional <b>4-voice chiptune sound card</b> (ATtiny85, 15.6 kHz, 8-bit), with the <code>chipmunk</code> tracker and the Termina FM radio. Disk and network LEDs, and an optional OLED status screen.</dd>
       <dt>Input</dt><dd>Keyboard and mouse from the PC over <b>TCP 2323</b>, 8-byte frames, mDNS discovery <code>_termina._tcp</code>. Optional USB boot-protocol mouse.</dd>
       <dt>Connections</dt><dd>
         <div class="flow"><span>PC · termina-input</span>→ Wi-Fi · TCP 2323 →<span class="on">ESP32</span></div>
@@ -462,6 +475,7 @@ notes.txt: 12
         <a href="#shell">Processes and jobs</a>
         <a href="#scripts">Shell scripts</a>
         <a href="#lua">Programming in Lua</a>
+        <a href="#sound">Sound and music</a>
         <a href="#git">Git</a>
         <a href="#pkg">Packages</a>
         <a href="#code">Code layout</a>
@@ -475,7 +489,7 @@ notes.txt: 12
           <h4>Sound</h4>
           <p>You need a <strong>passive buzzer</strong>: + terminal on IO7, − terminal on GND. A power-hungry magnetic buzzer goes behind an NPN transistor (base tied to IO7 through 1 kΩ, with a diode across the buzzer). The pin is set in <code>firmware/src/sound.cpp</code>.</p>
           <h4>The sound card</h4>
-          <p>An optional <strong>Digispark</strong> (ATtiny85) turns into a 4-voice chiptune synthesizer: pulse, triangle, sawtooth or noise per voice, with a volume and an ADSR envelope. It is never plugged into the PC: the ESP32 programs it on four wires and rewrites it at boot whenever its firmware changes. Feed its <strong>5V</strong> pin (not VIN) from <strong>3V3</strong>, GND to GND, P0 to IO2 and P2 to IO1 (the I2C bus, each with a 4.7 kΩ pull-up to 3V3), P1 to IO21 and P5 (reset) to IO4. The sound comes out of P4: headphones through 1 kΩ and 10 µF (tip and ring together, sleeve on GND), or an amplifier such as a PAM8403 for a speaker. <code>snd</code> shows the card, <code>snd tone 440 500</code> tests it, and the <code>chipmunk</code> package is a tracker for it.</p>
+          <p>An optional <strong>Digispark</strong> (ATtiny85) turns into a 4-voice chiptune synthesizer: pulse, triangle, sawtooth or noise per voice, with a volume and an ADSR envelope. It is never plugged into the PC: the ESP32 programs it on four wires and rewrites it at boot whenever its firmware changes. Feed its <strong>5V</strong> pin (not VIN) from <strong>3V3</strong>, GND to GND, P0 to IO2 and P2 to IO1 (the I2C bus, each with a 4.7 kΩ pull-up to 3V3), P1 to IO21 and P5 (reset) to IO4. The sound comes out of P4: headphones through 1 kΩ and 10 µF (tip and ring together, sleeve on GND), or an amplifier such as a PAM8403 for a speaker. For a warmer sound, add a capacitor from the point between the 1 kΩ and the 10 µF to GND: it cuts the hiss of the 8-bit edges above about 3 kHz. With 32 Ω headphones take about <strong>1.5 µF</strong> (2.2 µF sounds more muffled); with 250 to 300 Ω headphones, 220 to 330 nF. <code>snd</code> shows the card and <code>snd tone 440 500</code> tests it; <a href="#sound">Sound and music</a> tells the rest.</p>
           <h4>The LEDs</h4>
           <p>The disk LED is on IO5 and the network LED on IO6. Each access lights them for at least 40 ms so you have time to see it. The disk LED shows the flash only, not the SD card.</p>
           <h4>The status screen</h4>
@@ -769,6 +783,41 @@ local key, kind = system.readansi(10)   -- "\27[A", "ansi"</pre>
           <p>Text is UTF-8. Beyond code page 437, a cell shows braille patterns (plots in 2&times;4 dots per cell), the box lines CP437 lacks (heavy, dashed, rounded &#x256D;&#x256E;&#x2570;&#x256F;, diagonals), block eighths, quadrants and sextants, the Powerline separators, accented capitals and other Latin letters, typographic quotes and dashes, and common marks (&#x2713; &#x2717; &#x25CF; &#x25B6;). Lines and blocks are drawn to the cell's size, so they meet from cell to cell. The <code>font</code> line of <code>/etc/termina.conf</code>, read at boot, picks the font: <code>classic</code>, <a href="https://github.com/fcambus/spleen">spleen</a> or <a href="https://terminus-font.sourceforge.net/">terminus</a>.</p>
           <p>luasystem is tested as upstream does: its own specs run with <a href="https://github.com/lunarmodules/busted">busted</a> on the firmware (in the emulator), and 90 of the 95 tests pass. The other 5 time things with <code>gettime()</code>.</p>
           <div class="callout info">A game loop must call <code>sys.yield()</code>, <code>key.wait()</code> or <code>sys.sleep()</code> so that the screen refreshes. The programs in <code>firmware/lua/</code> are built into the firmware: they are updated with each flash and take no room on the filesystem.</div>
+        </article>
+
+        <!-- Sound -->
+        <article class="chapter" id="sound">
+          <h3>Sound and music</h3>
+          <p>TERMINA has two voices. The <strong>buzzer</strong> beeps and plays RTTTL melodies: <code>beep [Hz] [ms]</code>, the BEL character, and <code>termina.sound</code> in Lua. The optional <strong>sound card</strong>, a Digispark ATtiny85 (see <a href="#wiring">Wiring</a>), is a small chiptune synthesizer: four voices, each a pulse with a duty cycle, a triangle, a sawtooth or noise, with a 4-bit volume and an ADSR envelope, mixed at 15625 Hz and sent out as 250 kHz PWM.</p>
+          <h4>The card</h4>
+          <p>The card never needs the PC. Its firmware is part of the ESP32's: at boot the ESP32 asks the card for its version over I2C and, when it does not answer or runs another version, writes it over four wires (ISP) and sets its fuses. A Digispark fresh from the shop loses its USB bootloader on the way, which leaves the whole 8 KB of flash to the synthesizer. The boot screen shows the card's version, and <code>snd</code> shows its version, signature and fuses; <code>snd flash -f</code> writes the firmware again, <code>snd flash file.hex</code> another one.</p>
+          <p>From Lua, <code>termina.synth</code> drives the four voices:</p>
+<pre>local synth = termina.synth
+synth.voice(1, {wave = "pulse", duty = 64, vol = 12, attack = 2, decay = 8, sustain = 9, release = 10})
+synth.voice(3, {wave = "triangle"})
+synth.note(1, 659.3, 400)     <span class="c">-- E5 for 400 ms, then the release</span>
+synth.note(3, 82.4)           <span class="c">-- E2, held until off(3)</span>
+synth.master(12)              <span class="c">-- master volume 0-15</span></pre>
+          <h4>chipmunk, the tracker</h4>
+          <p><code>pkg install chipmunk</code>, then <code>chipmunk [file]</code>: a four-channel tracker in the style of the 90s, with eight instruments, 32-row patterns and an order list that chains them into a song. Songs are saved in <code>/music/*.chp</code>; a new file starts with a demo.</p>
+          <div class="table-wrap"><table>
+            <tr><th>Keys</th><th>Action</th></tr>
+            <tr><td>Letter rows</td><td>A two-octave piano: plays and writes notes (<kbd>F9</kbd> switches QWERTY and AZERTY)</td></tr>
+            <tr><td><kbd>Tab</kbd></td><td>Pattern, instruments, order list</td></tr>
+            <tr><td><kbd>Space</kbd> <kbd>F5</kbd></td><td>Play the pattern, play the song</td></tr>
+            <tr><td><kbd>F1</kbd>/<kbd>F2</kbd> <kbd>F3</kbd>/<kbd>F4</kbd> <kbd>F7</kbd>/<kbd>F8</kbd></td><td>Instrument, octave, tempo</td></tr>
+            <tr><td><kbd>Enter</kbd> <kbd>Del</kbd></td><td>Note off, clear</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> <kbd>Esc</kbd></td><td>Save, quit</td></tr>
+          </table></div>
+          <h4>Termina FM, the radio</h4>
+          <p><code>pkg install radio</code>, then <code>radio</code>. Termina FM is endless music composed on the fly by a server and broadcast as notes, not audio: your card plays them, and every TERMINA tuned in hears the same song at the same time. Two stations are on air, <strong>lofi</strong> (jazzy chords, swing, tape wobble, vinyl crackle) and <strong>synthwave</strong> (minor keys, arpeggios, pumping bass, a chorus hook). The screen shows the song, its key and tempo, the listeners and a meter per voice.</p>
+<pre>radio                      <span class="c">full screen</span>
+radio -s synthwave         <span class="c">start on a station (remembered)</span>
+radio 192.168.1.10         <span class="c">another server (remembered)</span>
+radio -q &amp;                 <span class="c">no screen: play in the background</span></pre>
+          <p><kbd>←</kbd>/<kbd>→</kbd> or <kbd>1</kbd>-<kbd>9</kbd> change stations, <kbd>+</kbd>/<kbd>-</kbd> set the volume, <kbd>M</kbd> mutes, <kbd>Esc</kbd> quits. The <strong>SIGNAL</strong> panel explains dropouts: the <em>buffer</em> is how much music has arrived ahead of what plays (the server sends notes 3 seconds early), <em>late</em> counts notes that came too late and were skipped, <em>silence</em> is the longest wait for the server, <em>loop</em> the slowest pass of the program.</p>
+          <p>The server is <code>termina-radio</code>, in the TERMINA repository: <code>go run ./cmd/termina-radio</code> serves consoles on TCP 8484 and a web page on 8485, where a browser can listen to each station through a model of the card. <code>-wav file.wav -station synthwave</code> renders a few minutes to a file instead. The protocol is text lines, described in <code>internal/radio/proto.go</code>.</p>
+          <div class="callout info">The card has no output filter of its own: with headphones straight on its 1 kΩ, the 8-bit edges sound harsh. The capacitor described in <a href="#wiring">Wiring</a> makes it much warmer.</div>
         </article>
 
         <!-- Git -->
