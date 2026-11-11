@@ -328,7 +328,7 @@ notes.txt: 12
       <div class="cell">
         <div class="tag">Processes</div>
         <h3>Up to forty at once.</h3>
-        <p>Signals, environment, <code>ps</code>, <code>kill</code>, <code>fg</code>, <code>bg</code>.</p>
+        <p>Signals, environment, <code>ps</code>, <code>kill</code>, <code>pgrep</code>, <code>pkill</code>, <code>fg</code>, <code>bg</code>.</p>
         <div class="big">40</div>
       </div>
       <div class="cell">
@@ -622,7 +622,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>grep [-ivnc] text [f...]</code> <code>wc [-lwc]</code> <code>head [-n N]</code> <code>tail [-n N]</code> <code>tee [-a] f</code></td><td>Text tools: they read their files or their input (<code>ls | grep lua</code>)</td></tr>
             <tr><td><code>sort [-rnuf]</code> <code>uniq [-cd]</code> <code>diff a b</code></td><td>Sorted lines (reversed, by number, once each, any case), repeated lines once (with their count), changed lines</td></tr>
             <tr><td><code>seq [-w] [-s sep] [first [incr]] last</code></td><td>Numbers from first to last, decimals allowed (<code>for i in $(seq 10)</code>, <code>seq 0 0.5 2</code>); <code>-w</code> pads with zeros, <code>-s</code> sets the separator</td></tr>
-            <tr><td><code>ps</code> <code>jobs</code> <code>fg</code> <code>bg</code> <code>kill [-SIG] %job|pid</code> <code>wait</code> <code>sleep s</code></td><td>Processes and jobs</td></tr>
+            <tr><td><code>ps</code> <code>jobs</code> <code>fg</code> <code>bg</code> <code>kill [-SIG] %job|pid</code> <code>pgrep [-lafxinoc] text</code> <code>pkill [-SIG] [-efxino] text</code> <code>wait</code> <code>sleep s</code></td><td>Processes and jobs</td></tr>
             <tr><td><code>export NAME=value</code> <code>unset NAME</code> <code>env</code></td><td>Variables, inherited by the programs started afterwards. <code>PATH</code> lists the directories where a command <code>name</code> is looked for, as <code>name.lua</code> or <code>name.sh</code>, after the built-in commands and programs: <code>.:/:/.pkg/bin</code> by default; <code>export PATH=$PATH:/bin</code> adds <code>/bin</code></td></tr>
             <tr><td><code>alias name='cmd args'</code> <code>unalias name</code> <code>history [-c]</code></td><td>Aliases and command history</td></tr>
             <tr><td><code>edit f</code></td><td>nano-style editor with Lua and shell highlighting, files up to 256 KB: <kbd>^S</kbd> save, <kbd>^X</kbd> exit · <kbd>Shift</kbd>+arrows select, <kbd>Alt</kbd>+<kbd>A</kbd> all · <kbd>^K</kbd> cut, <kbd>Alt</kbd>+<kbd>C</kbd> copy, <kbd>^U</kbd> paste (the selection, or the whole line) · <kbd>^W</kbd> search, <kbd>F3</kbd> next, <kbd>^R</kbd> replace · <kbd>^Z</kbd> undo, <kbd>^Y</kbd> redo · <kbd>^G</kbd> go to a line</td></tr>
@@ -674,7 +674,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>$NAME</code> <code>${NAME}</code> <code>$?</code> <code>$$</code> <code>$!</code></td><td>A variable, the last exit code, the shell's pid, the last background pid</td></tr>
             <tr><td><code>NAME=value cmd</code></td><td>A variable for this command only</td></tr>
           </table></div>
-          <p><kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts the foreground job and <kbd>Ctrl</kbd>+<kbd>Z</kbd> stops it. <code>fg %1</code> brings a job back, <code>bg %1</code> lets a stopped one go on behind, <code>kill %1</code> ends it (<code>kill -l</code> lists the signals). A background job that waits for a key stops until <code>fg</code>.</p>
+          <p><kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts the foreground job and <kbd>Ctrl</kbd>+<kbd>Z</kbd> stops it. <code>fg %1</code> brings a job back, <code>bg %1</code> lets a stopped one go on behind, <code>kill %1</code> ends it (<code>kill -l</code> lists the signals). <code>pgrep name</code> prints the pids of the processes whose program name contains a text (<code>-l</code> with names, <code>-f</code> matches the whole command line, <code>-x</code> the exact name), <code>pkill name</code> signals them (<code>pkill -KILL name</code>). A background job that waits for a key stops until <code>fg</code>.</p>
           <p><code>ps</code> shows the processes: <code>R</code> running, <code>S</code> sleeping, <code>T</code> stopped; then <code>W</code> if its stack is in PSRAM and <code>+</code> if it has the keyboard. <code>mem</code> ends with a <code>Stacks:</code> line: how many 16 KB stack slots are in use, how many tasks share them and how many stacks are in PSRAM.</p>
           <h4>At the prompt</h4>
           <p>A long line continues on the next rows. <kbd>↑</kbd>/<kbd>↓</kbd> go through the last 200 lines (<code>history</code> lists them), and <kbd>^R</kbd> searches them: type part of a command, <kbd>^R</kbd> again for an older one, <kbd>Enter</kbd> runs it. <kbd>Tab</kbd> completes names. <kbd>^U</kbd>, <kbd>^K</kbd> and <kbd>^W</kbd> cut to the start, to the end or the previous word into the clipboard, <kbd>^Y</kbd> pastes it, so text copied in <code>edit</code> or Notepad can be pasted here. <kbd>Shift</kbd>+<kbd>PgUp</kbd>/<kbd>PgDn</kbd> and the mouse wheel scroll back through the last 1000 rows that left the top of the screen (the status bar shows how far); any other key returns to the bottom.</p>
@@ -798,6 +798,7 @@ synth.voice(3, {wave = "triangle"})
 synth.note(1, 659.3, 400)     <span class="c">-- E5 for 400 ms, then the release</span>
 synth.note(3, 82.4)           <span class="c">-- E2, held until off(3)</span>
 synth.master(12)              <span class="c">-- master volume 0-15</span></pre>
+          <p><strong>PICO-8 cartridges</strong> (<code>pico8 cart</code>) play their four channels on the card's four voices, with their instruments, volumes and effects (slide, vibrato, drop, fades, arpeggios). Without a card, the buzzer plays one note at a time.</p>
           <h4>chipmunk, the tracker</h4>
           <p><code>pkg install chipmunk</code>, then <code>chipmunk [file]</code>: a four-channel tracker in the style of the 90s, with eight instruments, 32-row patterns and an order list that chains them into a song. Songs are saved in <code>/music/*.chp</code>; a new file starts with a demo.</p>
           <div class="table-wrap"><table>
