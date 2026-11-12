@@ -365,7 +365,7 @@ notes.txt: 12
       <div class="cell">
         <div class="tag">Online</div>
         <h3>Out on the network.</h3>
-        <p>A text-mode web browser with DuckDuckGo search, an ANSI <code>telnet</code>, and <code>share on</code> to drop files on the machine from any browser.</p>
+        <p>A text-mode web browser with DuckDuckGo search, an ANSI <code>telnet</code>, an <code>irc</code> client, and <code>share on</code> to drop files on the machine from any browser.</p>
       </div>
       <div class="cell">
         <div class="tag">Editor</div>
@@ -477,6 +477,7 @@ synth.note(1, 440, 500)</pre>
         <a href="#lua">Programming in Lua</a>
         <a href="#sound">Sound and music</a>
         <a href="#git">Git</a>
+        <a href="#irc">IRC</a>
         <a href="#pkg">Packages</a>
         <a href="#code">Code layout</a>
       </aside>
@@ -847,6 +848,26 @@ radio -q &amp;                 <span class="c">no screen: play in the background
           <p>Other commands: <code>status</code>, <code>diff [--cached]</code>, <code>log [-n N]</code>, <code>show [commit]</code>, <code>rm f</code>, <code>restore [--staged] f</code>, <code>branch [name]</code>, <code>switch branch</code>, <code>pull</code>. The name, email, login and token are kept in NVS and never in the repository. For GitHub, the token is a <em>personal access token</em> with write access to the repository.</p>
           <div class="callout">A few limitations: the clone is shallow (latest commit only) and objects are not compressed, so the repository takes about twice the size of the files. <code>pull</code> can only fast-forward: if both sides have different commits, it stops without merging. Committing requires network time (NTP).</div>
           <p>To develop the client on the PC, there is a test bench: <code>sh firmware/test/host/build.sh</code>, then <code>hostlua.exe --root /tmp/disk firmware/lua/git.lua clone &lt;url&gt;</code>.</p>
+        </article>
+
+        <!-- IRC -->
+        <article class="chapter" id="irc">
+          <h3>IRC</h3>
+          <p><code>pkg install irc</code>, then <code>irc</code>. It is a full-screen IRC client that stays connected to several servers at once. Each server has a status window, and each channel and private conversation gets a window of its own. A channel window has the nick list on the right, only as wide as the longest nick. On the portrait screen, the full topic and the number of users are at the top, and each person's messages are grouped under their name and the time. A long line in the input wraps onto up to three rows. On a screen 100 columns wide or more, each message is one row, with the time and the nick in columns. <code>/layout tall|wide|auto</code> picks a layout. mIRC colors and UTF-8 are shown. A line that mentions your nick is highlighted. The bar above the input line lists the windows, and a window with new messages lights up there.</p>
+<pre>irc                        <span class="c">connect to the servers marked autoconnect</span>
+irc irc.libera.chat #lua   <span class="c">one server only, TLS unless port 6667</span></pre>
+          <p>The first run writes <code>/etc/irc.conf</code>, a Lua table holding your nick (random until you change it) and the servers to connect to:</p>
+<pre>return {
+  nick = "ada",
+  servers = {
+    { name = "libera", host = "irc.libera.chat", port = 6697, tls = true,
+      autoconnect = true, autojoin = { "#lua" },
+      sasl = { user = "ada", pass = "secret" } },   <span class="c">registered nick</span>
+  },
+}</pre>
+          <p>Commands: <code>/join #channel</code>, <code>/part</code>, <code>/msg nick text</code>, <code>/query nick</code>, <code>/me action</code>, <code>/nick new</code>, <code>/topic</code>, <code>/names</code>, <code>/whois nick</code>, <code>/away</code>, <code>/connect host[:port]</code>, <code>/disconnect</code>, <code>/reconnect</code>, <code>/close</code>, <code>/win n|name</code>, <code>/save</code> (writes the servers and channels open now into the settings) and <code>/quit</code>. <code>/help</code> lists them all. Any other command goes to the server as typed (<code>/mode #c +i</code>).</p>
+          <p>Keys: <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>0</kbd> jump to a window, and <kbd>Alt</kbd>+<kbd>W</kbd> lists all the windows, one per row. <kbd>Alt</kbd>+<kbd>N</kbd> shows or hides the nick list. With the mouse, click a window in the bar to open it, or a nick in the list to talk to that person privately. <kbd>Alt</kbd>+arrows or <kbd>Ctrl</kbd>+<kbd>P</kbd>/<kbd>N</kbd> go to the previous or next one, and <kbd>Alt</kbd>+<kbd>A</kbd> to the next one with activity. <kbd>PgUp</kbd>/<kbd>PgDn</kbd> and the mouse wheel scroll back. <kbd>Tab</kbd> completes nicks, channels and commands, <kbd>↑</kbd>/<kbd>↓</kbd> recall earlier lines, and <kbd>Ctrl</kbd>+<kbd>Q</kbd> quits. A dropped connection is retried after 5 s, with the wait doubling each time up to 5 minutes, and the channels are joined again.</p>
+          <div class="callout">The machine does not verify TLS certificates. Instead, <code>irc</code> remembers each server's certificate in <code>/etc/irc.known</code> the first time it connects and refuses one that changes later. If the server really did change its certificate, <code>/trust</code> accepts the new one, then <code>/reconnect</code>.</div>
         </article>
 
         <!-- Packages -->
