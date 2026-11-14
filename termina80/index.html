@@ -185,7 +185,10 @@ section + section { border-top: 1px solid var(--line); }
 .case { background: var(--paper); color: var(--ink); }
 .case .eyebrow { color: #0a7a43; }
 .case .head p, .case .head h2 em { color: #6b716d; }
-.case .shot { margin: 0 auto; width: 100%; max-width: 900px; }
+.case .shot { display: block; margin: 0 auto; width: 100%; max-width: 640px; border-radius: 22px; }
+.case .shot.night { margin-top: 16px; }
+.case .row figure img { display: block; width: 100%; height: auto; }
+.case .note + .note { margin-top: 16px; }
 .case .row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 48px; }
 .case .row figure { margin: 0; background: #fff; border-radius: 22px; overflow: hidden; border: 1px solid #e6e6df; }
 .case figcaption { padding: 14px 18px; font: 500 12px/1.4 var(--mono); color: #6b716d; border-top: 1px solid #ecece6; }
@@ -442,16 +445,18 @@ synth.note(1, 440, 500)</pre>
   <div class="wrap">
     <div class="head">
       <div class="eyebrow">Design</div>
-      <h2>Period beige. <em>Printed at home.</em></h2>
-      <p>An OpenSCAD case with its stand, built around a 7" HDMI screen (Waveshare 7inch HDMI LCD (C)). The chin holds the OLED status screen on the left, then the disk and network LEDs and a grille that lets the buzzer sing. Inside, the ESP32-S3 and the Pico 2W video card ride on a tray, their USB ports through the side walls, and the Pico's HDMI plug goes straight into the screen.</p>
+      <h2>An 80s terminal. <em>Printed at home.</em></h2>
+      <p>A wedge-shaped OpenSCAD case on a plinth, built around a 7" HDMI screen (Waveshare 7inch HDMI LCD (C)) standing upright. The chin plate holds the OLED status screen and its two page buttons, the plinth the power, disk and RGB light pipes, and two speakers sit behind the honeycomb side vents. Inside, the boards stack on three levels held by the plinth: the ESP32-S3 on its terminal adapter, the Pico 2W video card on a deck above it, and the sound card on a third deck, so the back cover comes off freely.</p>
     </div>
-    <img class="shot" src="img/preview.png" alt="3D render of the TERMINA 80 case from the front, beige on a brown stand, with the 7-inch screen, the OLED status screen, the LEDs and the buzzer grille">
+    <img class="shot" src="img/render_34.jpg" alt="Photo render of the TERMINA 80 on a wooden desk: a light grey wedge-shaped terminal with an upright 7-inch screen showing Lua code, a dark chin plate with the OLED status screen and two buttons, honeycomb vents on the side and a dark plinth with three colored LEDs">
     <div class="row">
-      <figure><img src="img/preview_side.png" alt="The case from the left side, with the Pico 2W's USB port in the left wall"><figcaption>Side · USB through both walls</figcaption></figure>
-      <figure><img src="img/preview_back.png" alt="The case from the back, with its vents and the engraved label"><figcaption>Back · vents and engraved label</figcaption></figure>
-      <figure><img src="img/preview_tray.png" alt="The electronics tray that holds the DevKitC-1 and the Pico 2W"><figcaption>Tray · ESP32-S3 and Pico 2W</figcaption></figure>
+      <figure><img src="img/render_front.jpg" alt="The TERMINA 80 from the front, between books and a mug"><figcaption>Front · screen, chin plate, LEDs</figcaption></figure>
+      <figure><img src="img/render_side.jpg" alt="The TERMINA 80 from the right, showing the right faceplate with the SD card slot and the USB flashing ports"><figcaption>Right · SD card and flashing ports</figcaption></figure>
+      <figure><img src="img/render_back.jpg" alt="The TERMINA 80 from behind: honeycomb vents, the engraved VENDETTA 84 label, and faceplates with two USB-A ports, the USB-C power input, the power switch, the Wi-Fi LED and a wire hatch"><figcaption>Back · USB, power, Wi-Fi LED</figcaption></figure>
     </div>
-    <p class="note">The sources are in <code>case/</code>: <code>termina_case.scad</code> for OpenSCAD, plus STL files for the body, the back, the stand, the screen bars, the board tray and a test front plate to check the screen and OLED fit first.</p>
+    <img class="shot night" src="img/render_dark.jpg" alt="The TERMINA 80 at night, its screen and LEDs lighting a dark desk with neon light strips" loading="lazy">
+    <p class="note">Every port sits on a <strong>faceplate</strong>, a small plate screwed into the plinth: the ports can change by reprinting a faceplate, not the case. Left side: two USB-A host ports. Back: two more USB-A, the USB-C power input and the switch, plus a hatch for temporary wires. Right side: the SD card slot and the flashing ports of both boards.</p>
+    <p class="note">The sources are in <code>case/</code>: <code>termina_retro.scad</code> for OpenSCAD and <code>build_retro_stl.sh</code> to export every part (heat-set inserts, or <code>-D inserts=false</code> for a first print with self-tapping screws), plus the Blender scene behind these renders in <code>case/blender/</code>.</p>
   </div>
 </section>
 
@@ -932,7 +937,7 @@ pkg url [address]     <span class="c">change the main registry</span></pre>
             <tr><td><code>firmware/src/lua/</code></td><td>Lua 5.4.7 engine (capped memory, Ctrl+C) and libraries</td></tr>
             <tr><td><code>firmware/lua/</code></td><td>Built-in Lua programs (the Git client, <code>pkg</code>)</td></tr>
             <tr><td><code>firmware/test/host/</code></td><td>Lua test bench on the PC</td></tr>
-            <tr><td><code>case/</code></td><td>OpenSCAD case, board tray and STL files</td></tr>
+            <tr><td><code>case/</code></td><td>OpenSCAD case, faceplates, board decks, STL files and the Blender render scene</td></tr>
           </table></div>
         </article>
       </div>
