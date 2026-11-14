@@ -378,7 +378,7 @@ notes.txt: 12
       <div class="cell wide glow">
         <div class="tag">Sound card</div>
         <h3>A 4-voice chiptune synth.</h3>
-        <p>An ATtiny85 on its own I2C bus: pulse, triangle, sawtooth and noise, each with an ADSR envelope, mixed at 15.6 kHz. The ESP32 flashes it by itself, no cable to the PC. Write songs in the <code>chipmunk</code> tracker, or play it from Lua.</p>
+        <p>An ATtiny85 on its own I2C bus: pulse, triangle, sawtooth and noise, each with an ADSR envelope, mixed at 15.6 kHz. The ESP32 flashes it by itself, no cable to the PC. Write songs in the <code>chipmunk</code> tracker, live-code patterns with <code>cycles</code>, or play it from Lua.</p>
 <pre>local synth = termina.synth
 synth.voice(1, {wave = "triangle", attack = 4})
 synth.note(1, 440, 500)</pre>
@@ -847,6 +847,23 @@ end</pre>
             <tr><td><kbd>Space</kbd> <kbd>F5</kbd></td><td>Play the pattern, play the song</td></tr>
             <tr><td><kbd>F1</kbd>/<kbd>F2</kbd> <kbd>F3</kbd>/<kbd>F4</kbd> <kbd>F7</kbd>/<kbd>F8</kbd></td><td>Instrument, octave, tempo</td></tr>
             <tr><td><kbd>Enter</kbd> <kbd>Del</kbd></td><td>Note off, clear</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> <kbd>Esc</kbd></td><td>Save, quit</td></tr>
+          </table></div>
+          <h4>cycles, live coding</h4>
+          <p><code>pkg install cycles</code>, then <code>cycles [file]</code>: music written as patterns, in the style of TidalCycles and Strudel. Type a pattern, press <kbd>F5</kbd> and it loops; change it and press <kbd>F5</kbd> again, and the new version takes over at the next note, without a pause. Code is saved in <code>/music/*.cyc</code> (<code>/music/live.cyc</code> by default); a new file starts with an example, and <kbd>F2</kbd> goes through the others. <code>cycles play file</code> plays a file without the editor.</p>
+<pre>setcps(0.6)                                       <span class="c">-- cycles per second (or setcpm)</span>
+$: s("bd [~ bd] sd ~, hh*8")                      <span class="c">-- drums</span>
+$: n("0 2 4 &lt;7 9&gt;").scale("C:minor").s("sawtooth")  <span class="c">-- a melody on a scale</span>
+     .every(4, x =&gt; x.fast(2))
+$: note("&lt;c2 a1&gt;").s("triangle")                   <span class="c">-- the bass</span></pre>
+          <p>Strings are in <strong>mini-notation</strong>: <code>a b c</code> a sequence in one cycle, <code>~</code> a rest, <code>[a b]</code> a group in one step, <code>&lt;a b&gt;</code> one per cycle, <code>a, b</code> together, <code>a*2</code> <code>a/2</code> faster or slower, <code>a!3</code> repeated, <code>a@3</code> longer, <code>a?</code> sometimes left out, <code>a(3,8)</code> a euclidean rhythm, <code>[a|b]</code> one at random. Patterns have the usual methods: <code>fast</code>, <code>slow</code>, <code>rev</code>, <code>every</code>, <code>iter</code>, <code>ply</code>, <code>off</code>, <code>sometimes</code>, <code>degradeBy</code>, <code>add</code>, <code>scale</code>, <code>struct</code>, <code>segment</code> and <code>range</code> with the signals <code>sine</code>, <code>saw</code>, <code>rand</code> and <code>irand</code>. Write <code>.fast(2)</code> as in Strudel or <code>:fast(2)</code> as in Lua; <code>x =&gt; ...</code>, <code>//</code> comments and <code>$:</code> lines are accepted too, so many short Strudel examples run as they are.</p>
+          <p>Sounds are the card's: <code>triangle</code> (the default), <code>square</code>, <code>pulse</code>, <code>sawtooth</code>, <code>noise</code>, and drums made from them, <code>bd</code>, <code>sd</code>, <code>hh</code>, <code>oh</code>, <code>cp</code>, <code>rim</code>, <code>cr</code> and the toms <code>lt</code>, <code>mt</code>, <code>ht</code>. Each event takes <code>note</code> (a name like <code>c#4</code> or a MIDI number), <code>gain</code>, <code>duty</code>, <code>attack</code>, <code>decay</code>, <code>sustain</code>, <code>release</code> (or <code>adsr("0:0.1:0.5:0.2")</code>), <code>legato</code> and <code>voice</code> (1-4, to keep a part on one voice). Notes go to the four voices in turn: more than four at once take the voice that frees up first. There are no samples, filters or effects: it is a chip.</p>
+          <div class="table-wrap"><table>
+            <tr><th>Keys</th><th>Action</th></tr>
+            <tr><td><kbd>F5</kbd> or <kbd>Ctrl</kbd>+<kbd>Enter</kbd></td><td>Play the code (again)</td></tr>
+            <tr><td><kbd>F6</kbd></td><td>Stop</td></tr>
+            <tr><td><kbd>F2</kbd></td><td>Next example</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Delete the line</td></tr>
             <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> <kbd>Esc</kbd></td><td>Save, quit</td></tr>
           </table></div>
           <h4>Termina FM, the radio</h4>
