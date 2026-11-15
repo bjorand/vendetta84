@@ -396,7 +396,7 @@ synth.note(1, 440, 500)</pre>
       <div class="cell half">
         <div class="tag">Themes</div>
         <h3>Pick your glow.</h3>
-        <p>Phosphor green, amber or white, CGA, or synthwave neon. With scanlines if you like.</p>
+        <p>Phosphor green, amber or white, CGA, synthwave or cyberpunk neon. With scanlines if you like.</p>
         <div class="swatches">
           <i style="background:#07140b;color:#49ff7a">G</i>
           <i style="background:#140c03;color:#ffb02e">A</i>
@@ -654,7 +654,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>alias name='cmd args'</code> <code>unalias name</code> <code>history [-c]</code></td><td>Aliases and command history</td></tr>
             <tr><td><code>prompt [style]</code></td><td>Prompt styles: <code>capsule</code>, <code>powerline</code>, <code>minimal</code>, <code>plain</code></td></tr>
             <tr><td><code>edit f</code></td><td>nano-style editor with Lua and shell highlighting, files up to 256 KB: <kbd>^S</kbd> save, <kbd>^X</kbd> exit · <kbd>Shift</kbd>+arrows select, <kbd>Alt</kbd>+<kbd>A</kbd> all · <kbd>^K</kbd> cut, <kbd>Alt</kbd>+<kbd>C</kbd> copy, <kbd>^U</kbd> paste (the selection, or the whole line) · <kbd>^W</kbd> search, <kbd>F3</kbd> next, <kbd>^R</kbd> replace · <kbd>^Z</kbd> undo, <kbd>^Y</kbd> redo · <kbd>^G</kbd> go to a line</td></tr>
-            <tr><td><code>theme [green|amber|white|cga|synthwave]</code> <code>scan on|off</code> <code>mode 100|75</code></td><td>Display (settings remembered). <code>theme</code> comes from the <code>chroma</code> package, installed with the firmware: alone, it lists the themes with a sample of their 16 colors</td></tr>
+            <tr><td><code>theme [green|amber|white|cga|synthwave|cyberpunk]</code> <code>scan on|off</code> <code>mode 100|75</code></td><td>Display (settings remembered). <code>theme</code> comes from the <code>chroma</code> package, installed with the firmware: alone, it lists the themes with a sample of their 16 colors</td></tr>
             <tr><td><code>saver [none|stars|mystify] [minutes]</code></td><td>Screen saver after that long without a key or the mouse, at the prompt or over a running program (the key that wakes it is not typed; a program can turn it off with <code>sys.saver(false)</code>)</td></tr>
             <tr><td><code>mem</code> <code>df</code> <code>uptime</code> <code>date</code> <code>ver</code> <code>sysinfo</code></td><td>System information</td></tr>
             <tr><td><code>bt</code> <code>keymap [us|fr]</code></td><td>Bluetooth manager (a package installed with the firmware): turn on, pair, forget keyboards and mice (<code>bt status|on|off|scan</code>, <code>bt pair|forget addr</code> from the prompt). <code>keymap</code>: the layout of the Bluetooth keyboards, saved in <code>/etc/termina.conf</code></td></tr>
