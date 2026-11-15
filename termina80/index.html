@@ -162,9 +162,9 @@ section + section { border-top: 1px solid var(--line); }
   content: ""; position: absolute; right: -120px; bottom: -160px; width: 360px; height: 360px; border-radius: 50%;
   background: radial-gradient(closest-side, var(--phos-dim), transparent); pointer-events: none;
 }
-.swatches { display: flex; gap: 10px; margin-top: 24px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
 .swatches i {
-  flex: 1; height: 54px; border-radius: 12px; border: 1px solid var(--line);
+  flex: 1 0 44px; height: 54px; border-radius: 12px; border: 1px solid var(--line);
   display: grid; place-items: center; font: 500 13px/1 var(--mono); font-style: normal;
 }
 
@@ -396,13 +396,19 @@ synth.note(1, 440, 500)</pre>
       <div class="cell half">
         <div class="tag">Themes</div>
         <h3>Pick your glow.</h3>
-        <p>Phosphor green, amber or white, CGA, synthwave or cyberpunk neon. With scanlines if you like.</p>
+        <p>Phosphor green, amber or white, CGA, synthwave or cyberpunk neon, Solarized, Gruvbox, C64, Dracula or Tokyo Night, previewed live on the whole screen. With scanlines if you like.</p>
         <div class="swatches">
           <i style="background:#07140b;color:#49ff7a">G</i>
           <i style="background:#140c03;color:#ffb02e">A</i>
           <i style="background:#0c0e12;color:#e9f1ff">W</i>
           <i style="background:#0000aa;color:#55ffff">CGA</i>
           <i style="background:#1a1033;color:#ff2e97">SW</i>
+          <i style="background:#0a0a12;color:#fcee0a">CP</i>
+          <i style="background:#002b36;color:#b58900">SOL</i>
+          <i style="background:#282828;color:#fabd2f">GB</i>
+          <i style="background:#352879;color:#8d80d8">64</i>
+          <i style="background:#282a36;color:#ff79c6">DR</i>
+          <i style="background:#1a1b26;color:#7aa2f7">TN</i>
         </div>
       </div>
       <div class="cell half">
@@ -654,7 +660,7 @@ go run ./cmd/termina-input -addr 192.168.4.1:2323</pre>
             <tr><td><code>alias name='cmd args'</code> <code>unalias name</code> <code>history [-c]</code></td><td>Aliases and command history</td></tr>
             <tr><td><code>prompt [style]</code></td><td>Prompt styles: <code>capsule</code>, <code>powerline</code>, <code>minimal</code>, <code>plain</code></td></tr>
             <tr><td><code>edit f</code></td><td>nano-style editor with Lua and shell highlighting, files up to 256 KB: <kbd>^S</kbd> save, <kbd>^X</kbd> exit · <kbd>Shift</kbd>+arrows select, <kbd>Alt</kbd>+<kbd>A</kbd> all · <kbd>^K</kbd> cut, <kbd>Alt</kbd>+<kbd>C</kbd> copy, <kbd>^U</kbd> paste (the selection, or the whole line) · <kbd>^W</kbd> search, <kbd>F3</kbd> next, <kbd>^R</kbd> replace · <kbd>^Z</kbd> undo, <kbd>^Y</kbd> redo · <kbd>^G</kbd> go to a line</td></tr>
-            <tr><td><code>theme [green|amber|white|cga|synthwave|cyberpunk]</code> <code>scan on|off</code> <code>mode 100|75</code></td><td>Display (settings remembered). <code>theme</code> comes from the <code>chroma</code> package, installed with the firmware: alone, it lists the themes with a sample of their 16 colors</td></tr>
+            <tr><td><code>theme [name|list]</code> <code>scan on|off</code> <code>mode 100|75</code></td><td>Display (settings remembered). <code>theme</code> comes from the <code>chroma</code> package, installed with the firmware: alone, it opens a picker that previews each theme on the whole screen (arrows or the mouse, Enter keeps it, Esc goes back); <code>theme list</code> lists them with a sample of their 16 colors. The themes: green, amber, white, cga, synthwave, cyberpunk, solarized, gruvbox, c64, dracula, tokyonight</td></tr>
             <tr><td><code>saver [none|stars|mystify] [minutes]</code></td><td>Screen saver after that long without a key or the mouse, at the prompt or over a running program (the key that wakes it is not typed; a program can turn it off with <code>sys.saver(false)</code>)</td></tr>
             <tr><td><code>mem</code> <code>df</code> <code>uptime</code> <code>date</code> <code>ver</code> <code>sysinfo</code></td><td>System information</td></tr>
             <tr><td><code>bt</code> <code>keymap [us|fr]</code></td><td>Bluetooth manager (a package installed with the firmware): turn on, pair, forget keyboards and mice (<code>bt status|on|off|scan</code>, <code>bt pair|forget addr</code> from the prompt). <code>keymap</code>: the layout of the Bluetooth keyboards, saved in <code>/etc/termina.conf</code></td></tr>
