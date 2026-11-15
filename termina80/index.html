@@ -850,7 +850,7 @@ end</pre>
             <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> <kbd>Esc</kbd></td><td>Save, quit</td></tr>
           </table></div>
           <h4>cycles, live coding</h4>
-          <p><code>pkg install cycles</code>, then <code>cycles [file]</code>: music written as patterns, in the style of TidalCycles and Strudel. Type a pattern, press <kbd>F5</kbd> and it loops; change it and press <kbd>F5</kbd> again, and the new version takes over at the next note, without a pause. Code is saved in <code>/music/*.cyc</code> (<code>/music/live.cyc</code> by default); a new file starts with an example, and <kbd>F2</kbd> goes through the others. <code>cycles play file</code> plays a file without the editor.</p>
+          <p><code>pkg install cycles</code>, then <code>cycles [file]</code>: music written as patterns, in the style of TidalCycles and Strudel. Type a pattern, press <kbd>F5</kbd> and it loops; change it and press <kbd>F5</kbd> again, and the new version takes over within a second, while the music goes on (the console needs a moment to read a long piece of code). Code is saved in <code>/music/*.cyc</code> (<code>/music/live.cyc</code> by default); a new file starts with an example, and <kbd>F2</kbd> goes through the others. <code>cycles play file</code> plays a file without the editor.</p>
 <pre>setcps(0.6)                                       <span class="c">-- cycles per second (or setcpm)</span>
 $: s("bd [~ bd] sd ~, hh*8")                      <span class="c">-- drums</span>
 $: n("0 2 4 &lt;7 9&gt;").scale("C:minor").s("sawtooth")  <span class="c">-- a melody on a scale</span>
